@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compendio Oficial: El Arquero del Carpio</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Faustina:ital,wght@0,400;0,600;1,400&display=swap');
+
+        :root {
+            --bg-color: #0d0b08;
+            --paper-bg: #1e1812;
+            --paper-card: #272018;
+            --paper-border: #423526;
+            --gold-light: #f3e5ab;
+            --gold-primary: #c9a050;
+            --gold-dark: #8c6a28;
+            --text-primary: #e6dac8;
+            --text-muted: #a39580;
+            --red-crimson: #8b1e1e;
+            --red-hover: #a62424;
+            --green-emerald: #2d5a27;
+            --blue-sapphire: #1f4e6d;
+            --purple-mystic: #5a2a62;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 50% 0%, #2a1f14 0%, transparent 75%),
+                radial-gradient(circle at 50% 100%, #150f0a 0%, transparent 100%);
+            color: var(--text-primary);
+            font-family: 'Faustina', serif;
+            font-size: 16px;
+            line-height: 1.5;
+            padding: 30px 20px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        #game-container {
+            width: 100%;
+            max-width: 1150px;
+            background: var(--paper-bg);
+            border: 3px solid var(--gold-dark);
+            outline: 6px solid var(--paper-border);
+            box-shadow: 
+                0 0 40px rgba(0, 0, 0, 0.9),
+                inset 0 0 80px rgba(0, 0, 0, 0.6);
+            border-radius: 4px;
+            padding: 30px;
+            position: relative;
+        }
+
+        /* Encabezado Medieval */
+        header {
+            text-align: center;
+            border-bottom: 2px solid var(--gold-dark);
+            padding-bottom: 20px;
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        header::after {
+            content: "❖ ⚔ ❖";
+            position: absolute;
+            bottom: -13px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--paper-bg);
+            padding: 0 15px;
+            color: var(--gold-primary);
+            font-family: 'Cinzel', serif;
+            font-size: 0.9rem;
+        }
+
+        h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 2.4rem;
+            color: var(--gold-primary);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8), 0 0 10px rgba(201, 160, 80, 0.2);
+            margin-bottom: 12px;
+        }
+
+        .header-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 12px 15px;
+            border-radius: 4px;
+            border: 1px solid var(--paper-border);
+            font-family: 'Cinzel', serif;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .header-info span {
+            color: var(--gold-light);
+            font-weight: bold;
+        }
+
+        /* Layout Grid para PC */
+        .layout-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 850px) {
+            .layout-grid { grid-template-columns: 1fr; }
+        }
+
+        /* Secciones y Cajas */
+        .section-box {
+            background: var(--paper-card);
+            border: 1px solid var(--paper-border);
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.4);
+            padding: 20px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .section-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.1rem;
+            color: var(--gold-primary);
+            border-bottom: 1px solid var(--paper-border);
+            padding-bottom: 8px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Hero Avatar Panel */
+        .hero-display-panel {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--gold-dark);
+            padding: 20px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 20px;
+            border-radius: 4px;
+        }
+
+        .hero-avatar-box {
+            position: relative;
+            width: 140px;
+            height: 180px;
+            background: radial-gradient(circle, #2c2217 0%, #0d0b08 100%);
+            border: 2px solid var(--gold-primary);
+            box-shadow: 0 0 15px rgba(0,0,0,0.8), inset 0 0 20px rgba(0,0,0,0.9);
+            border-radius: 4px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .avatar-layer {
+            position: absolute;
+            transition: all 0.3s;
+            user-select: none;
+        }
+
+        .layer-body { font-size: 4.2rem; z-index: 1; filter: drop-shadow(0 2px 4px #000); }
+        .layer-armadura { font-size: 3.8rem; z-index: 2; opacity: 0.9; }
+        .layer-casco { top: 12px; font-size: 2.2rem; z-index: 4; }
+        .layer-arma { right: 8px; top: 48px; font-size: 2.4rem; z-index: 3; }
+        .layer-escudo { left: 8px; top: 52px; font-size: 2.2rem; z-index: 3; }
+
+        .equipped-list {
+            font-size: 0.9rem;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            background: var(--paper-bg);
+            padding: 15px 20px;
+            border-radius: 4px;
+            border: 1px solid var(--paper-border);
+            min-width: 260px;
+        }
+
+        .equipped-list span {
+            color: var(--gold-light);
+        }
+
+        /* Botones Medievales */
+        .btn {
+            background: linear-gradient(180deg, var(--red-crimson) 0%, #5a1010 100%);
+            color: var(--gold-light);
+            border: 1px solid var(--gold-dark);
+            padding: 8px 16px;
+            cursor: pointer;
+            font-family: 'Cinzel', serif;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            border-radius: 2px;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .btn:hover {
+            background: linear-gradient(180deg, var(--red-hover) 0%, #701414 100%);
+            border-color: var(--gold-primary);
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.7);
+        }
+
+        .btn-gold {
+            background: linear-gradient(180deg, var(--gold-primary) 0%, var(--gold-dark) 100%);
+            color: #0e0c0a;
+            border: 1px solid var(--gold-light);
+            text-shadow: none;
+        }
+
+        .btn-gold:hover {
+            background: linear-gradient(180deg, var(--gold-light) 0%, var(--gold-primary) 100%);
+            color: #000;
+        }
+
+        /* Sistema de Guardado */
+        .save-system-panel {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--paper-border);
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .save-system-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .save-system-controls input {
+            flex: 1;
+            padding: 8px 12px;
+            background: #120e0a;
+            border: 1px solid var(--paper-border);
+            color: var(--text-primary);
+            border-radius: 2px;
+            font-family: 'Faustina', serif;
+        }
+
+        .save-system-controls input:focus {
+            outline: 1px solid var(--gold-primary);
+        }
+
+        /* Atributos / Stats Grid */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 10px;
+        }
+
+        .stat-card {
+            background: rgba(0,0,0,0.25);
+            padding: 10px;
+            border-radius: 3px;
+            border: 1px solid var(--paper-border);
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        .stat-name {
+            font-family: 'Cinzel', serif;
+            color: var(--gold-primary);
+            font-size: 0.8rem;
+            margin-bottom: 4px;
+        }
+
+        .stat-level {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            margin-top: 2px;
+        }
+
+        /* Misiones */
+        .mission-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(0,0,0,0.25);
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            border-radius: 3px;
+            border: 1px solid var(--paper-border);
+            transition: border-color 0.2s;
+        }
+
+        .mission-item:hover {
+            border-color: var(--gold-dark);
+        }
+
+        .mission-item.sub {
+            margin-left: 20px;
+            background: rgba(0,0,0,0.4);
+            font-size: 0.9rem;
+        }
+
+        .mission-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .mission-info input[type="checkbox"] {
+            accent-color: var(--gold-primary);
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .mission-rewards {
+            font-family: 'Cinzel', serif;
+            font-size: 0.75rem;
+            color: var(--gold-primary);
+        }
+
+        /* Jefes Finales y Barras de Progreso */
+        .boss-card {
+            background: rgba(0,0,0,0.25);
+            border: 1px solid var(--paper-border);
+            padding: 12px;
+            margin-bottom: 12px;
+            border-radius: 3px;
+        }
+
+        .boss-header {
+            display: flex;
+            justify-content: space-between;
+            font-family: 'Cinzel', serif;
+            font-size: 0.85rem;
+            color: var(--gold-light);
+            margin-bottom: 6px;
+        }
+
+        .progress-bar-bg {
+            background: #120e0a;
+            height: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid var(--paper-border);
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--red-crimson), #c92a2a);
+            width: 100%;
+            transition: width 0.4s ease;
+        }
+
+        /* Vitality Bars */
+        .bar-container {
+            margin-bottom: 12px;
+        }
+
+        .bar-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            margin-bottom: 4px;
+            color: var(--text-muted);
+        }
+
+        .fill-hp { background: linear-gradient(90deg, #1b4315, #388e3c); }
+        .fill-sanidad { background: linear-gradient(90deg, #123752, #0288d1); }
+        .fill-luz { background: linear-gradient(90deg, #8c6a28, #fbc02d); }
+        .fill-corrupcion { background: linear-gradient(90deg, #3b1242, #8e24aa); }
+
+        /* Tienda / Bazar */
+        .shop-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--paper-border);
+            padding-bottom: 8px;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-family: 'Cinzel', serif;
+            font-size: 0.85rem;
+            cursor: pointer;
+            padding: 5px 10px;
+            transition: color 0.2s;
+        }
+
+        .tab-btn.active {
+            color: var(--gold-primary);
+            border-bottom: 2px solid var(--gold-primary);
+        }
+
+        .shop-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+            max-height: 280px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .shop-grid::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .shop-grid::-webkit-scrollbar-thumb {
+            background: var(--paper-border);
+            border-radius: 3px;
+        }
+
+        .shop-item {
+            background: rgba(0,0,0,0.25);
+            border: 1px solid var(--paper-border);
+            padding: 10px;
+            border-radius: 3px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            font-size: 0.85rem;
+        }
+
+        .item-cost {
+            color: var(--gold-primary);
+            font-family: 'Cinzel', serif;
+            font-size: 0.8rem;
+            margin: 4px 0;
+        }
+
+        /* Moneda del Destino */
+        .coin-box {
+            text-align: center;
+            background: rgba(0,0,0,0.25);
+            padding: 15px;
+            border-radius: 3px;
+            border: 1px solid var(--paper-border);
+        }
+
+        .coin-result {
+            font-family: 'Cinzel', serif;
+            font-size: 1rem;
+            color: var(--gold-light);
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <header>
+        <h1>El Arquero del Carpio</h1>
+        <div class="header-info">
+            <div>Héroe: <span id="hero-name">El Arquero</span></div>
+            <div>Nivel: <span id="hero-level">1</span> (<span id="hero-xp">0</span>/100 XP)</div>
+            <div>Rango: <span id="hero-rank">Novato</span></div>
+            <div>Reino: <span id="hero-realm">Fogata</span></div>
+            <div>Fortuna: 🪙 <span id="hero-coins">0</span></div>
+        </div>
+    </header>
+
+    <!-- AVATAR VISUAL DEL HÉROE -->
+    <div class="hero-display-panel">
+        <div style="text-align: center;">
+            <div style="font-family: 'Cinzel', serif; color: var(--gold-primary); font-size: 0.85rem; margin-bottom: 8px; text-transform: uppercase;">
+                ❖ Apariencia del Héroe ❖
+            </div>
+            <div class="hero-avatar-box">
+                <div class="avatar-layer layer-body">🧍</div>
+                <div class="avatar-layer layer-armadura" id="avatar-armadura"></div>
+                <div class="avatar-layer layer-casco" id="avatar-casco"></div>
+                <div class="avatar-layer layer-arma" id="avatar-arma"></div>
+                <div class="avatar-layer layer-escudo" id="avatar-escudo"></div>
+            </div>
+        </div>
+
+        <div class="equipped-list">
+            <div style="font-family: 'Cinzel', serif; color: var(--gold-primary); border-bottom: 1px solid var(--paper-border); padding-bottom: 4px; margin-bottom: 8px; text-transform: uppercase;">
+                🛡️ Equipamiento Vestido
+            </div>
+            <div>🪖 <strong>Casco:</strong> <span id="eq-casco">Ninguno</span></div>
+            <div>🥋 <strong>Armadura:</strong> <span id="eq-armadura">Ropa de Aldeano</span></div>
+            <div>🗡️ <strong>Arma:</strong> <span id="eq-arma">Puños</span></div>
+            <div>🛡️ <strong>Escudo:</strong> <span id="eq-escudo">Ninguno</span></div>
+        </div>
+    </div>
+
+    <!-- GUARDADO Y TRANSFERENCIA -->
+    <div class="save-system-panel">
+        <div style="font-family: 'Cinzel', serif; font-size: 0.85rem; color: var(--gold-primary); text-transform: uppercase;">
+            💾 Guardado & Registro de Partida
+        </div>
+        <div class="save-system-controls">
+            <button class="btn btn-gold" onclick="exportSaveCode()">📋 Copiar Código</button>
+            <input type="text" id="saveCodeInput" placeholder="Pegá tu código de partida aquí...">
+            <button class="btn" onclick="importSaveCode()">📥 Cargar Código</button>
+        </div>
+    </div>
+
+    <!-- SECCIONES EN DOS COLUMNAS PARA PANTALLA DE PC -->
+    <div class="layout-grid">
+        
+        <!-- COLUMNA IZQUIERDA -->
+        <div>
+            <!-- ATRIBUTOS / STATS -->
+            <div class="section-box">
+                <div class="section-title">👤 Atributos del Héroe</div>
+                <div class="stat-grid" id="stats-container"></div>
+            </div>
+
+            <!-- MONEDA DEL DESTINO & COMBOS -->
+            <div class="section-box">
+                <div class="section-title">🪙 Moneda del Destino</div>
+                <div class="coin-box">
+                    <button class="btn btn-gold" id="btn-coin" onclick="rollDestinyCoin()">Lanzar Moneda Diaria</button>
+                    <div class="coin-result" id="coin-result">Sin lanzar hoy</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 5px;" id="coin-effect">Lanza para determinar el augurio del día.</div>
+                </div>
+                <div style="margin-top: 15px; font-size: 0.85rem;">
+                    <div>Hábitos completados hoy: <strong id="daily-habits-count" style="color: var(--gold-primary);">0</strong> / 7</div>
+                    <div style="display: flex; gap: 5px; margin-top: 8px; flex-wrap: wrap;">
+                        <span class="btn" style="font-size: 0.7rem; opacity: 0.4; pointer-events: none;" id="combo-3">Combo 3 (+10 XP)</span>
+                        <span class="btn" style="font-size: 0.7rem; opacity: 0.4; pointer-events: none;" id="combo-5">Combo 5 (+20 XP, +15 🪙)</span>
+                        <span class="btn" style="font-size: 0.7rem; opacity: 0.4; pointer-events: none;" id="combo-perfect">Día Perfecto (+50 XP, +30 🪙)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VITALIDAD Y BOTICARIO -->
+            <div class="section-box">
+                <div class="section-title">❤️ Vitalidad y Estado</div>
+                
+                <div class="bar-container">
+                    <div class="bar-label"><span>Salud (HP)</span><span id="label-hp">100/100</span></div>
+                    <div class="progress-bar-bg"><div class="progress-bar-fill fill-hp" id="bar-hp"></div></div>
+                </div>
+                <div class="bar-container">
+                    <div class="bar-label"><span>Sanidad Mental</span><span id="label-sanidad">100/100</span></div>
+                    <div class="progress-bar-bg"><div class="progress-bar-fill fill-sanidad" id="bar-sanidad"></div></div>
+                </div>
+                <div class="bar-container">
+                    <div class="bar-label"><span>Luz</span><span id="label-luz">1000/1000</span></div>
+                    <div class="progress-bar-bg"><div class="progress-bar-fill fill-luz" id="bar-luz"></div></div>
+                </div>
+                <div class="bar-container">
+                    <div class="bar-label"><span>Corrupción</span><span id="label-corrupcion">0/100</span></div>
+                    <div class="progress-bar-bg"><div class="progress-bar-fill fill-corrupcion" id="bar-corrupcion"></div></div>
+                </div>
+
+                <div style="margin-top: 15px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 3px; border: 1px solid var(--paper-border);">
+                    <div style="font-family: 'Cinzel', serif; font-size: 0.8rem; color: var(--gold-primary); margin-bottom: 6px;">🏥 El Boticario</div>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button class="btn" style="font-size: 0.7rem;" onclick="buyHealing(10)">Curación (15 🪙 x 10 HP)</button>
+                        <button class="btn" style="font-size: 0.7rem;" onclick="payMultaAgotamiento()">Saldar Agotamiento (50 🪙)</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- COLUMNA DERECHA -->
+        <div>
+            <!-- MISIONES DIARIAS -->
+            <div class="section-box">
+                <div class="section-title">📜 Rutina & Misiones Diarias</div>
+                <div id="missions-container"></div>
+                <button class="btn btn-gold" style="width: 100%; margin-top: 15px;" onclick="finishDay()">🌙 Finalizar Jornada</button>
+            </div>
+
+            <!-- JEFES FINALES -->
+            <div class="section-box">
+                <div class="section-title">🐉 Jefes Finales</div>
+                <div id="bosses-container"></div>
+            </div>
+
+            <!-- MERCADO & BAZAR -->
+            <div class="section-box">
+                <div class="section-title">🏬 Mercado & Armería</div>
+                <div class="shop-tabs">
+                    <button class="tab-btn active" onclick="switchShopTab('bazar', event)">🔮 Bazar Místico</button>
+                    <button class="tab-btn" onclick="switchShopTab('armeria', event)">🛡️ Armería (Skins)</button>
+                </div>
+                <div class="shop-grid" id="shop-container"></div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+// --- ESTADO DEL JUEGO ---
+let gameState = {
+    xp: 0,
+    level: 1,
+    coins: 0,
+    coinRolled: false,
+    coinResult: null,
+    vitalBars: {
+        hp: 100,
+        sanidad: 100,
+        luz: 1000,
+        corrupcion: 0
+    },
+    stats: {
+        mente: 0,
+        disciplina: 0,
+        espiritu: 0,
+        sabiduria: 0,
+        fuerza: 0,
+        lenguaje: 0,
+        orden: 0
+    },
+    completedToday: {},
+    bosses: {
+        ingles: { currentHp: 18000, maxHp: 18000, name: 'Guardián del Inglés' },
+        libros: { currentHp: 7500, maxHp: 7500, name: 'Devorador de Libros' },
+        titan: { currentHp: 10500, maxHp: 10500, name: 'Titán de Hierro' },
+        academica: { currentHp: 10500, maxHp: 10500, name: 'La Montaña Académica' },
+        monje: { currentHp: 15000, maxHp: 15000, name: 'El Monje Interior' }
+    },
+    inventory: [],
+    equipped: {
+        casco: null,
+        armadura: null,
+        arma: null,
+        escudo: null
+    }
+};
+
+const RANKS = [
+    { level: 1, name: "Novato" },
+    { level: 5, name: "Discípulo" },
+    { level: 10, name: "Guerrero" },
+    { level: 15, name: "Caballero" },
+    { level: 20, name: "Monje de Hierro" },
+    { level: 30, name: "Maestro" },
+    { level: 40, name: "Señor del Tercer Plano" },
+    { level: 50, name: "Leyenda" }
+];
+
+const REALMS = [
+    { level: 1, name: "Fogata" },
+    { level: 5, name: "Campamento" },
+    { level: 10, name: "Refugio" },
+    { level: 20, name: "Fortaleza" },
+    { level: 35, name: "Bastión" },
+    { level: 50, name: "Ciudad del Tercer Plano" }
+];
+
+const MISSIONS = [
+    { id: 'aseo_p', name: '🪒 Aseo personal', xp: 10, stat: 'disciplina', statVal: 1, isSub: false },
+    { id: 'aseo_c', name: '🧹 Aseo / Orden casa', xp: 15, stat: 'orden', statVal: 1, isSub: false },
+    { id: 'leer', name: '📖 Leer (1 hora)', xp: 15, stat: 'sabiduria', statVal: 1, boss: 'libros', dmg: 20, isSub: false },
+    { id: 'meditar', name: '🧘 Meditar (1 hora)', xp: 20, stat: 'espiritu', statVal: 1, boss: 'monje', dmg: 40, isSub: false },
+    { id: 'entrenar', name: '🏋️ Entrenar', xp: 30, stat: 'fuerza', statVal: 1, boss: 'titan', dmg: 30, isSub: false },
+    { id: 'facultad_analisis', name: '🎓 Análisis Matemático (8 Pomodoros)', xp: 20, stat: 'mente', statVal: 1, boss: 'academica', dmg: 20, isSub: false },
+    { id: 'facultad_ipc', name: '🎓 IPC / Otras Materias', xp: 10, stat: 'mente', statVal: 1, boss: 'academica', dmg: 10, isSub: true },
+    { id: 'ingles_bloque_a', name: '🇬🇧 Inglés - Bloque A (Cambridge / Workbook)', xp: 25, stat: 'lenguaje', statVal: 2, boss: 'ingles', dmg: 15, isSub: false },
+    { id: 'ingles_bloque_b', name: '🇬🇧 Inglés - Bloque B (Input Libre 30m)', xp: 20, stat: 'lenguaje', statVal: 1, boss: 'ingles', dmg: 15, isSub: true },
+    { id: 'ingles_anki', name: '🎴 Inglés - Repaso Anki Diario', xp: 15, stat: 'lenguaje', statVal: 1, boss: 'ingles', dmg: 10, isSub: true },
+    { id: 'ingles_tutor', name: '🗣️ Inglés - Conversación Real (1-2x/sem)', xp: 15, stat: 'lenguaje', statVal: 1, boss: 'ingles', dmg: 5, isSub: true }
+];
+
+const BAZAR_ITEMS = [
+    { id: 'pan', name: '🥖 Pan del Peregrino', cost: 45, desc: '+20 Vitalidad Universal' },
+    { id: 'agua', name: '💧 Agua Bendita', cost: 45, desc: '-5 Corrupción' },
+    { id: 'arena', name: '🪨 Arena Contaminada', cost: 35, desc: '+20 DMG a Monje, -5 Vitalidad' },
+    { id: 'visiones', name: '🍄 Visiones Retorcidas', cost: 65, desc: 'Próxima meditación XP x2' },
+    { id: 'flauta', name: '🪈 Flauta Hipnótica', cost: 85, desc: '1 Hábito otorga XP x3 hoy' },
+    { id: 'amuleto', name: '📿 Amuleto del Monje', cost: 75, desc: '+15 Vitalidad' }
+];
+
+const ARMERIA_ITEMS = [
+    { id: 'arm_primitiva', name: '🪵 Armadura Primitiva', cost: 320, cat: 'armadura', icon: '🪵' },
+    { id: 'arm_cuero', name: '🦺 Armadura de Cuero', cost: 750, cat: 'armadura', icon: '🦺' },
+    { id: 'arm_divina', name: '🥋 Protección Divina', cost: 1200, cat: 'armadura', icon: '🥋' },
+    { id: 'arma_baculo', name: '🪄 Báculo Sagrado', cost: 115, cat: 'arma', icon: '🪄' },
+    { id: 'arma_excalibur', name: '🗡️ Excalibur', cost: 720, cat: 'arma', icon: '🗡️' },
+    { id: 'escudo_roble', name: '🛡️ Escudo de Roble', cost: 135, cat: 'escudo', icon: '🛡️' },
+    { id: 'casco_balduino', name: '👑 Casco Balduino IV', cost: 590, cat: 'casco', icon: '👑' }
+];
+
+let activeShopTab = 'bazar';
+
+function init() {
+    loadGame();
+    renderAll();
+}
+
+function renderAll() {
+    renderHeader();
+    renderAvatar();
+    renderStats();
+    renderMissions();
+    renderBosses();
+    renderBars();
+    renderShop();
+}
+
+function renderHeader() {
+    document.getElementById('hero-level').innerText = gameState.level;
+    document.getElementById('hero-xp').innerText = gameState.xp % 100;
+    document.getElementById('hero-coins').innerText = gameState.coins;
+
+    let rank = RANKS[0].name;
+    for (let r of RANKS) {
+        if (gameState.level >= r.level) rank = r.name;
+    }
+    document.getElementById('hero-rank').innerText = rank;
+
+    let realm = REALMS[0].name;
+    for (let rm of REALMS) {
+        if (gameState.level >= rm.level) realm = rm.name;
+    }
+    document.getElementById('hero-realm').innerText = realm;
+
+    if (gameState.coinRolled) {
+        document.getElementById('btn-coin').disabled = true;
+        document.getElementById('coin-result').innerText = gameState.coinResult === 'cara' ? "🪙 CARA (¡XP x2 HOY!)" : "🪙 CRUZ (Corrupción +10)";
+    }
+}
+
+function renderAvatar() {
+    const eq = gameState.equipped;
+    document.getElementById('avatar-casco').innerText = eq.casco ? getIconById(eq.casco) : '';
+    document.getElementById('avatar-armadura').innerText = eq.armadura ? getIconById(eq.armadura) : '';
+    document.getElementById('avatar-arma').innerText = eq.arma ? getIconById(eq.arma) : '';
+    document.getElementById('avatar-escudo').innerText = eq.escudo ? getIconById(eq.escudo) : '';
+
+    document.getElementById('eq-casco').innerText = eq.casco ? getNameById(eq.casco) : 'Ninguno';
+    document.getElementById('eq-armadura').innerText = eq.armadura ? getNameById(eq.armadura) : 'Ropa de Aldeano';
+    document.getElementById('eq-arma').innerText = eq.arma ? getNameById(eq.arma) : 'Puños';
+    document.getElementById('eq-escudo').innerText = eq.escudo ? getNameById(eq.escudo) : 'Ninguno';
+}
+
+function getIconById(id) {
+    const item = ARMERIA_ITEMS.find(i => i.id === id);
+    return item ? item.icon : '';
+}
+
+function getNameById(id) {
+    const item = ARMERIA_ITEMS.find(i => i.id === id);
+    return item ? item.name : id;
+}
+
+function renderStats() {
+    const container = document.getElementById('stats-container');
+    container.innerHTML = '';
+
+    for (let [statKey, pts] of Object.entries(gameState.stats)) {
+        let level = Math.floor(pts / 100) + 1;
+        if (level > 5) level = 5;
+
+        let levelName = "Iniciado";
+        if (level === 2) levelName = "Practicante";
+        if (level === 3) levelName = "Avanzado";
+        if (level === 4) levelName = "Veterano";
+        if (level === 5) levelName = "Maestro";
+
+        container.innerHTML += `
+            <div class="stat-card">
+                <div class="stat-name">${capitalize(statKey)}</div>
+                <div>Pts: ${pts}</div>
+                <div class="stat-level">Niv. ${level} (${levelName})</div>
+            </div>
+        `;
+    }
+}
+
+function renderMissions() {
+    const container = document.getElementById('missions-container');
+    container.innerHTML = '';
+
+    let completedCount = 0;
+
+    MISSIONS.forEach(m => {
+        const isChecked = !!gameState.completedToday[m.id];
+        if (isChecked) completedCount++;
+
+        container.innerHTML += `
+            <div class="mission-item ${m.isSub ? 'sub' : ''}">
+                <div class="mission-info">
+                    <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleMission('${m.id}')">
+                    <span>${m.name}</span>
+                </div>
+                <div class="mission-rewards">+${m.xp} XP</div>
+            </div>
+        `;
+    });
+
+    document.getElementById('daily-habits-count').innerText = completedCount;
+    document.getElementById('combo-3').style.opacity = completedCount >= 3 ? "1" : "0.4";
+    document.getElementById('combo-5').style.opacity = completedCount >= 5 ? "1" : "0.4";
+    document.getElementById('combo-perfect').style.opacity = completedCount >= MISSIONS.length ? "1" : "0.4";
+}
+
+function toggleMission(id) {
+    const mission = MISSIONS.find(m => m.id === id);
+    if (!mission) return;
+
+    if (gameState.completedToday[id]) {
+        delete gameState.completedToday[id];
+        gameState.xp = Math.max(0, gameState.xp - mission.xp);
+        gameState.stats[mission.stat] = Math.max(0, gameState.stats[mission.stat] - mission.statVal);
+        gameState.coins = Math.max(0, gameState.coins - 5);
+
+        if (mission.boss && gameState.bosses[mission.boss]) {
+            gameState.bosses[mission.boss].currentHp = Math.min(
+                gameState.bosses[mission.boss].maxHp,
+                gameState.bosses[mission.boss].currentHp + mission.dmg
+            );
+        }
+    } else {
+        let xpMult = (gameState.coinResult === 'cara') ? 2 : 1;
+        gameState.completedToday[id] = true;
+        gameState.xp += (mission.xp * xpMult);
+        gameState.stats[mission.stat] += mission.statVal;
+        gameState.coins += 5;
+
+        if (mission.boss && gameState.bosses[mission.boss]) {
+            gameState.bosses[mission.boss].currentHp = Math.max(
+                0,
+                gameState.bosses[mission.boss].currentHp - mission.dmg
+            );
+        }
+    }
+
+    gameState.level = Math.floor(gameState.xp / 100) + 1;
+    saveGame();
+    renderAll();
+}
+
+function renderBosses() {
+    const container = document.getElementById('bosses-container');
+    container.innerHTML = '';
+
+    for (let [key, boss] of Object.entries(gameState.bosses)) {
+        let pct = (boss.currentHp / boss.maxHp) * 100;
+        container.innerHTML += `
+            <div class="boss-card">
+                <div class="boss-header">
+                    <span>${boss.name}</span>
+                    <span>${boss.currentHp} / ${boss.maxHp} HP</span>
+                </div>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" style="width: ${pct}%;"></div>
+                </div>
+            </div>
+        `;
+    }
+}
+
+function renderBars() {
+    document.getElementById('label-hp').innerText = `${gameState.vitalBars.hp}/100`;
+    document.getElementById('bar-hp').style.width = `${gameState.vitalBars.hp}%`;
+
+    document.getElementById('label-sanidad').innerText = `${gameState.vitalBars.sanidad}/100`;
+    document.getElementById('bar-sanidad').style.width = `${gameState.vitalBars.sanidad}%`;
+
+    document.getElementById('label-luz').innerText = `${gameState.vitalBars.luz}/1000`;
+    document.getElementById('bar-luz').style.width = `${(gameState.vitalBars.luz / 1000) * 100}%`;
+
+    document.getElementById('label-corrupcion').innerText = `${gameState.vitalBars.corrupcion}/100`;
+    document.getElementById('bar-corrupcion').style.width = `${gameState.vitalBars.corrupcion}%`;
+}
+
+function rollDestinyCoin() {
+    if (gameState.coinRolled) return;
+
+    gameState.coinRolled = true;
+    gameState.coinResult = Math.random() < 0.5 ? 'cara' : 'cruz';
+
+    if (gameState.coinResult === 'cruz') {
+        gameState.vitalBars.corrupcion = Math.min(100, gameState.vitalBars.corrupcion + 10);
+    }
+
+    saveGame();
+    renderAll();
+}
+
+function switchShopTab(tab, evt) {
+    activeShopTab = tab;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    if(evt) evt.target.classList.add('active');
+    renderShop();
+}
+
+function renderShop() {
+    const container = document.getElementById('shop-container');
+    container.innerHTML = '';
+
+    const list = activeShopTab === 'bazar' ? BAZAR_ITEMS : ARMERIA_ITEMS;
+
+    list.forEach(item => {
+        let isPurchased = gameState.inventory.includes(item.id);
+        let isEquipped = item.cat && gameState.equipped[item.cat] === item.id;
+
+        let btnAction = '';
+        if (activeShopTab === 'bazar') {
+            btnAction = `<button class="btn" style="margin-top:6px; font-size:0.7rem;" onclick="buyItem('${item.id}', ${item.cost})">Comprar</button>`;
+        } else {
+            if (!isPurchased) {
+                btnAction = `<button class="btn" style="margin-top:6px; font-size:0.7rem;" onclick="buyItem('${item.id}', ${item.cost})">Comprar</button>`;
+            } else if (!isEquipped) {
+                btnAction = `<button class="btn btn-gold" style="margin-top:6px; font-size:0.7rem;" onclick="equipItem('${item.id}', '${item.cat}')">Equipar</button>`;
+            } else {
+                btnAction = `<button class="btn" style="margin-top:6px; font-size:0.7rem; background:#333;" onclick="unequipItem('${item.cat}')">Desequipar</button>`;
+            }
+        }
+
+        container.innerHTML += `
+            <div class="shop-item">
+                <div>
+                    <strong style="color:var(--gold-light);">${item.name}</strong>
+                    <div class="item-cost">${isPurchased ? '✔️ Adquirido' : '🪙 ' + item.cost + ' Monedas'}</div>
+                    <div style="font-size:0.75rem; color:var(--text-muted);">${item.desc || ('Tipo: ' + item.cat)}</div>
+                </div>
+                ${btnAction}
+            </div>
+        `;
+    });
+}
+
+function buyItem(id, cost) {
+    if (gameState.inventory.includes(id) && activeShopTab === 'armeria') return;
+
+    if (gameState.coins < cost) {
+        alert("No tienes suficientes monedas.");
+        return;
+    }
+
+    gameState.coins -= cost;
+    gameState.inventory.push(id);
+
+    const shopItem = ARMERIA_ITEMS.find(i => i.id === id);
+    if (shopItem) {
+        gameState.equipped[shopItem.cat] = id;
+    }
+
+    if (id === 'pan') gameState.vitalBars.hp = Math.min(100, gameState.vitalBars.hp + 20);
+    if (id === 'agua') gameState.vitalBars.corrupcion = Math.max(0, gameState.vitalBars.corrupcion - 5);
+
+    saveGame();
+    renderAll();
+}
+
+function equipItem(id, cat) {
+    gameState.equipped[cat] = id;
+    saveGame();
+    renderAll();
+}
+
+function unequipItem(cat) {
+    gameState.equipped[cat] = null;
+    saveGame();
+    renderAll();
+}
+
+function buyHealing(amountHp) {
+    let cost = (amountHp / 10) * 15;
+    if (gameState.coins < cost) {
+        alert("No tienes suficientes monedas.");
+        return;
+    }
+    gameState.coins -= cost;
+    gameState.vitalBars.hp = Math.min(100, gameState.vitalBars.hp + amountHp);
+    saveGame();
+    renderAll();
+}
+
+function payMultaAgotamiento() {
+    if (gameState.coins < 50) {
+        alert("No tienes 50 monedas.");
+        return;
+    }
+    gameState.coins -= 50;
+    alert("Sanción cancelada.");
+    saveGame();
+    renderAll();
+}
+
+function finishDay() {
+    MISSIONS.forEach(m => {
+        if (!gameState.completedToday[m.id] && m.boss) {
+            let regenVal = Math.round(m.dmg * 1.0);
+            gameState.bosses[m.boss].currentHp = Math.min(
+                gameState.bosses[m.boss].maxHp,
+                gameState.bosses[m.boss].currentHp + regenVal
+            );
+        }
+    });
+
+    gameState.completedToday = {};
+    gameState.coinRolled = false;
+    gameState.coinResult = null;
+
+    saveGame();
+    renderAll();
+    alert("Jornada finalizada. El progreso de los hábitos pendientes ha sido restablecido.");
+}
+
+function saveGame() {
+    localStorage.setItem('arqueroCarpioSave', JSON.stringify(gameState));
+}
+
+function loadGame() {
+    const saved = localStorage.getItem('arqueroCarpioSave');
+    if (saved) {
+        try {
+            gameState = Object.assign(gameState, JSON.parse(saved));
+        } catch(e) {
+            console.error("Error al cargar partida", e);
+        }
+    }
+}
+
+function exportSaveCode() {
+    saveGame();
+    const saveString = btoa(JSON.stringify(gameState));
+    navigator.clipboard.writeText(saveString).then(() => {
+        alert("Código de partida copiado al portapapeles.");
+    }).catch(() => {
+        prompt("Copia este código manualmente:", saveString);
+    });
+}
+
+function importSaveCode() {
+    const code = document.getElementById('saveCodeInput').value.trim();
+    if (!code) {
+        alert("Ingresá un código válido.");
+        return;
+    }
+    try {
+        const decoded = JSON.parse(atob(code));
+        gameState = decoded;
+        saveGame();
+        renderAll();
+        alert("¡Partida cargada con éxito!");
+    } catch(e) {
+        alert("Código inválido.");
+    }
+}
+
+function capitalize(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+init();
+</script>
+</body>
+</html>
