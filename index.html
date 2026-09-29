@@ -394,12 +394,6 @@
         .fill-luz { background: linear-gradient(90deg, #8c6a28, #fbc02d); }
         .fill-corrupcion { background: linear-gradient(90deg, #3b1242, #8e24aa); }
 
-        .fill-hp.critico { background: linear-gradient(90deg, #5a1010, #d32f2f); }
-        .estado-heroe { font-family: 'Cinzel', serif; font-size: 0.85rem; color: var(--gold-light); margin: 4px 0 10px; }
-        .resumen-dia { font-size: 0.78rem; color: var(--text-muted); border-left: 3px solid var(--gold-dark); background: rgba(0,0,0,0.25); padding: 6px 10px; margin-bottom: 8px; }
-        .regla-nota { font-size: 0.72rem; color: var(--text-muted); margin-bottom: 4px; }
-        .proteccion-fila { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 0.78rem; margin-top: 6px; }
-
         /* Tienda / Bazar */
         .shop-tabs {
             display: flex;
@@ -875,6 +869,7 @@
             <button class="btn" onclick="importSaveCode()">📥 Cargar Código</button>
             <button class="btn btn-peligro" onclick="resetGame()">🗑️ Restablecer Datos</button>
         </div>
+        <div id="saveStatus" style="font-size:0.85rem; min-height:1.1em;"></div>
     </div>
 
     <!-- CRÓNICA DEL HÉROE -->
@@ -935,15 +930,6 @@
                 <div class="bar-container">
                     <div class="bar-label"><span>Corrupción</span><span id="label-corrupcion">0/100</span></div>
                     <div class="progress-bar-bg"><div class="progress-bar-fill fill-corrupcion" id="bar-corrupcion"></div></div>
-                </div>
-
-                <div class="estado-heroe" id="estado-heroe"></div>
-                <div class="resumen-dia" id="resumen-dia"></div>
-                <div class="regla-nota" id="regla-penalizacion"></div>
-
-                <div style="margin-top: 15px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 3px; border: 1px solid var(--paper-border);">
-                    <div style="font-family: 'Cinzel', serif; font-size: 0.8rem; color: var(--gold-primary); margin-bottom: 6px;">🛡️ Protecciones</div>
-                    <div id="protecciones"></div>
                 </div>
 
                 <div style="margin-top: 15px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 3px; border: 1px solid var(--paper-border);">
@@ -1019,12 +1005,6 @@ let gameState = {
         orden: 0
     },
     completedToday: {},
-    diaActual: null,
-    diaCerrado: false,
-    agotado: false,
-    proteccion: null,
-    huevoMes: null,
-    resumenDia: '',
     bosses: {
         ingles: { currentHp: 18000, maxHp: 18000, name: 'Guardián del Inglés' },
         libros: { currentHp: 7500, maxHp: 7500, name: 'Devorador de Libros' },
@@ -1163,238 +1143,14 @@ const ARMERIA_ITEMS = [
 
 let activeShopTab = 'bazar';
 
-// =====================================================
-// VITALIDAD Y PENALIZACIONES (ajusta los números aquí)
-// =====================================================
-const CONFIG_PENALIZACION = {
-    // Por cada hábito PRINCIPAL (no "sub") que no hayas hecho al cerrar la jornada:
-    porHabitoOmitido: { hp: 10, sanidad: 5, luz: 60, corrupcion: 2, atributo: 1 },
-    // Recuperación al cerrar según hábitos principales cumplidos (se aplica el primero que cumpla)
-    recuperacion: [
-        { minHabitos: 7, hp: 10, sanidad: 10, luz: 100 },
-        { minHabitos: 5, hp: 5, sanidad: 5, luz: 50 }
-    ],
-    agotadoXpMult: 0.5,       // XP mientras estés Agotado (HP en 0)
-    hpMinimoTrasMulta: 20,    // HP al saldar el agotamiento
-    maxDiasAtrasados: 30
-};
-
-const PROTECCIONES = [
-    { id: 'huevo_rey', nombre: 'Huevo del Rey', efecto: 'HP, Sanidad y Luz intactas hoy (1 vez al mes)' },
-    { id: 'reloj_vacio', nombre: 'Reloj Vacío', efecto: 'Sin penalizaciones hoy y los jefes no regeneran' },
-    { id: 'elixir_oscuro', nombre: 'Elixir Oscuro', efecto: 'Día libre: sin penalizaciones' }
-];
-
-function limitar(n, min, max) { return Math.max(min, Math.min(max, n)); }
-
-function claveDia(f) {
-    f = f || new Date();
-    return f.getFullYear() + '-' + String(f.getMonth() + 1).padStart(2, '0') + '-' + String(f.getDate()).padStart(2, '0');
-}
-
-function diasEntre(a, b) {
-    const pa = a.split('-').map(Number), pb = b.split('-').map(Number);
-    return Math.round((Date.UTC(pb[0], pb[1] - 1, pb[2]) - Date.UTC(pa[0], pa[1] - 1, pa[2])) / 86400000);
-}
-
-function ajustarBarras() {
-    const v = gameState.vitalBars;
-    v.hp = limitar(Math.round(v.hp), 0, 100);
-    v.sanidad = limitar(Math.round(v.sanidad), 0, 100);
-    v.luz = limitar(Math.round(v.luz), 0, 1000);
-    v.corrupcion = limitar(Math.round(v.corrupcion), 0, 100);
-}
-
-// Completa campos que falten (partidas viejas o importadas)
-function normalizarEstado() {
-    gameState.vitalBars = Object.assign({ hp: 100, sanidad: 100, luz: 1000, corrupcion: 0 }, gameState.vitalBars || {});
-    gameState.stats = Object.assign({ mente: 0, disciplina: 0, espiritu: 0, sabiduria: 0, fuerza: 0, lenguaje: 0, orden: 0 }, gameState.stats || {});
-    if (!gameState.completedToday) gameState.completedToday = {};
-    if (!Array.isArray(gameState.inventory)) gameState.inventory = [];
-    if (typeof gameState.agotado !== 'boolean') gameState.agotado = false;
-    if (typeof gameState.diaCerrado !== 'boolean') gameState.diaCerrado = false;
-    if (!gameState.diaActual) gameState.diaActual = null;
-    if (!gameState.proteccion) gameState.proteccion = null;
-    if (!gameState.huevoMes) gameState.huevoMes = null;
-    if (typeof gameState.resumenDia !== 'string') gameState.resumenDia = '';
-    ajustarBarras();
-}
-
-// Aplica el cierre de UNA jornada y devuelve lo que cambió
-function aplicarCierreDia(completadas, proteccion) {
-    const cfg = CONFIG_PENALIZACION, v = gameState.vitalBars;
-    const principales = MISSIONS.filter(m => !m.isSub);
-    const omitidos = principales.filter(m => !completadas[m.id]);
-    const hechos = principales.length - omitidos.length;
-    const pausaTotal = (proteccion === 'reloj_vacio' || proteccion === 'elixir_oscuro');
-    const antes = { hp: v.hp, sanidad: v.sanidad, luz: v.luz, corrupcion: v.corrupcion };
-    let atributos = 0;
-
-    if (!pausaTotal) {
-        const n = omitidos.length, p = cfg.porHabitoOmitido;
-        if (proteccion !== 'huevo_rey') {
-            v.hp -= p.hp * n;
-            v.sanidad -= p.sanidad * n;
-            v.luz -= p.luz * n;
-        }
-        v.corrupcion += p.corrupcion * n;
-
-        omitidos.forEach(m => {
-            const previo = gameState.stats[m.stat] || 0;
-            gameState.stats[m.stat] = Math.max(0, previo - p.atributo);
-            atributos += previo - gameState.stats[m.stat];
-        });
-
-        // Los jefes recuperan vida por cada misión (principal o sub) no cumplida
-        MISSIONS.forEach(m => {
-            if (!completadas[m.id] && m.boss && gameState.bosses[m.boss]) {
-                gameState.bosses[m.boss].currentHp = Math.min(
-                    gameState.bosses[m.boss].maxHp,
-                    gameState.bosses[m.boss].currentHp + Math.round(m.dmg * 1.0)
-                );
-            }
-        });
-    }
-
-    const rec = cfg.recuperacion.find(r => hechos >= r.minHabitos);
-    if (rec) { v.hp += rec.hp; v.sanidad += rec.sanidad; v.luz += rec.luz; }
-
-    ajustarBarras();
-    if (v.hp <= 0) gameState.agotado = true;
-
-    return {
-        hechos: hechos, total: principales.length, omitidos: omitidos.length,
-        hp: v.hp - antes.hp, sanidad: v.sanidad - antes.sanidad, luz: v.luz - antes.luz,
-        corrupcion: v.corrupcion - antes.corrupcion, atributos: atributos, proteccion: proteccion
-    };
-}
-
-function formatoDeltas(r) {
-    const partes = [];
-    const f = (n, etq) => { if (n) partes.push(etq + ' ' + (n > 0 ? '+' : '−') + Math.abs(n)); };
-    f(r.hp, 'HP'); f(r.sanidad, 'Sanidad'); f(r.luz, 'Luz'); f(r.corrupcion, 'Corrupción');
-    if (r.atributos) partes.push('Atributos −' + r.atributos);
-    return partes.length ? partes.join(' · ') : 'sin cambios en tus barras';
-}
-
-function textoCierre(r) {
-    let t = 'Jornada cerrada: ' + r.hechos + '/' + r.total + ' hábitos principales. ' + formatoDeltas(r) + '.';
-    const p = PROTECCIONES.find(x => x.id === r.proteccion);
-    if (p) t += ' Protección usada: ' + p.nombre + '.';
-    if (gameState.agotado && gameState.vitalBars.hp <= 0) {
-        t += ' ¡Tu HP llegó a 0! Estás agotado: tu XP se reduce a la mitad hasta saldar la multa en el Boticario.';
-    }
-    return t;
-}
-
-// Si pasó la medianoche desde la última vez, cierra las jornadas pendientes automáticamente
-function sincronizarDia() {
-    const hoy = claveDia();
-    if (!gameState.diaActual) { gameState.diaActual = hoy; return false; }
-    const atraso = diasEntre(gameState.diaActual, hoy);
-    if (atraso <= 0) return false;
-
-    const acum = { omitidos: 0, hp: 0, sanidad: 0, luz: 0, corrupcion: 0, atributos: 0 };
-    let cerradas = 0;
-    const sumar = r => {
-        acum.omitidos += r.omitidos; acum.hp += r.hp; acum.sanidad += r.sanidad;
-        acum.luz += r.luz; acum.corrupcion += r.corrupcion; acum.atributos += r.atributos;
-        cerradas++;
-    };
-
-    if (!gameState.diaCerrado) sumar(aplicarCierreDia(gameState.completedToday, gameState.proteccion));
-    const vacios = Math.min(atraso - 1, CONFIG_PENALIZACION.maxDiasAtrasados);
-    for (let i = 0; i < vacios; i++) sumar(aplicarCierreDia({}, null));
-    gameState.proteccion = null;
-
-    // Si cerraste a mano ayer, lo que marcaste después ya cuenta para hoy
-    const conservar = gameState.diaCerrado && atraso === 1;
-    if (!conservar) {
-        gameState.completedToday = {};
-        gameState.coinRolled = false;
-        gameState.coinResult = null;
-    }
-    gameState.diaActual = hoy;
-    gameState.diaCerrado = false;
-
-    if (cerradas > 0) {
-        gameState.resumenDia = 'Se cerraron ' + cerradas + ' jornada(s) automáticamente (' + acum.omitidos +
-            ' hábitos principales omitidos): ' + formatoDeltas(acum) + '.' +
-            (gameState.agotado && gameState.vitalBars.hp <= 0 ? ' ¡Estás agotado!' : '');
-    }
-    return true;
-}
-
-function activarProteccion(id) {
-    if (gameState.diaCerrado) { alert("La jornada de hoy ya está cerrada. Activa la protección mañana."); return; }
-    if (gameState.proteccion) { alert("Ya tienes una protección activa hoy."); return; }
-    const idx = gameState.inventory.indexOf(id);
-    if (idx < 0) return;
-    if (id === 'huevo_rey') {
-        const mes = claveDia().slice(0, 7);
-        if (gameState.huevoMes === mes) { alert("El Huevo del Rey solo puede usarse una vez por mes."); return; }
-        gameState.huevoMes = mes;
-    }
-    gameState.inventory.splice(idx, 1);
-    gameState.proteccion = id;
-    saveGame();
-    renderAll();
-}
-
-function renderVitalidadExtra() {
-    const v = gameState.vitalBars;
-    let estado;
-    if (gameState.agotado) estado = '💀 Agotado (XP a la mitad hasta saldar la multa)';
-    else if (v.hp >= 70) estado = '🟢 Vigoroso';
-    else if (v.hp >= 40) estado = '🟡 Cansado';
-    else estado = '🔴 Debilitado';
-    document.getElementById('estado-heroe').innerText = 'Estado: ' + estado;
-
-    document.getElementById('resumen-dia').innerText = gameState.resumenDia || 'Aún no se ha cerrado ninguna jornada.';
-
-    const p = CONFIG_PENALIZACION.porHabitoOmitido;
-    document.getElementById('regla-penalizacion').innerText =
-        'Por cada hábito principal omitido al cerrar la jornada: −' + p.hp + ' HP, −' + p.sanidad + ' Sanidad, −' + p.luz +
-        ' Luz, +' + p.corrupcion + ' Corrupción y −' + p.atributo + ' al atributo del hábito. Cumplir 5 o más recupera vida. Los hábitos secundarios no penalizan.';
-
-    const cont = document.getElementById('protecciones');
-    cont.innerHTML = '';
-    const activa = PROTECCIONES.find(x => x.id === gameState.proteccion);
-    if (activa) {
-        cont.innerHTML += '<div class="proteccion-fila"><span>🛡️ <strong>Activa hoy:</strong> ' + activa.nombre + ' — ' + activa.efecto + '</span></div>';
-    }
-    let hay = false;
-    PROTECCIONES.forEach(pr => {
-        const cant = gameState.inventory.filter(i => i === pr.id).length;
-        if (!cant) return;
-        hay = true;
-        cont.innerHTML += '<div class="proteccion-fila"><span><strong>' + pr.nombre + '</strong> x' + cant +
-            '<br><span style="color:var(--text-muted);">' + pr.efecto + '</span></span>' +
-            '<button class="btn" style="font-size:0.7rem;" onclick="activarProteccion(\'' + pr.id + '\')">Activar hoy</button></div>';
-    });
-    if (!hay && !activa) {
-        cont.innerHTML = '<div class="proteccion-fila" style="color:var(--text-muted);">No tienes protecciones. Cómpralas en el Bazar Místico.</div>';
-    }
-}
-
 function init() {
     loadGame();
-    normalizarEstado();
-    sincronizarDia();
-    saveGame();
     renderAll();
     revisarCapitulos();
 }
 
-// Si dejas la pestaña abierta y pasa la medianoche
-function revisarCambioDeDia() {
-    if (sincronizarDia()) { saveGame(); renderAll(); }
-}
-document.addEventListener('visibilitychange', () => { if (!document.hidden) revisarCambioDeDia(); });
-setInterval(revisarCambioDeDia, 60000);
-
 function renderAll() {
-    [renderHeader, renderAvatar, renderStats, renderMissions, renderBosses, renderBars, renderVitalidadExtra, renderShop, renderCronica].forEach(fn => {
+    [renderHeader, renderAvatar, renderStats, renderMissions, renderBosses, renderBars, renderShop, renderCronica].forEach(fn => {
         try { fn(); } catch (e) { console.error('Error en ' + fn.name, e); }
     });
 }
@@ -1545,9 +1301,8 @@ function toggleMission(id) {
     if (!mission) return;
 
     if (gameState.completedToday[id]) {
-        const xpDevuelto = (typeof gameState.completedToday[id] === 'number') ? gameState.completedToday[id] : mission.xp;
         delete gameState.completedToday[id];
-        gameState.xp = Math.max(0, gameState.xp - xpDevuelto);
+        gameState.xp = Math.max(0, gameState.xp - mission.xp);
         gameState.stats[mission.stat] = Math.max(0, gameState.stats[mission.stat] - mission.statVal);
         gameState.coins = Math.max(0, gameState.coins - 5);
 
@@ -1559,10 +1314,8 @@ function toggleMission(id) {
         }
     } else {
         let xpMult = (gameState.coinResult === 'cara') ? 2 : 1;
-        if (gameState.agotado) xpMult *= CONFIG_PENALIZACION.agotadoXpMult;
-        const xpGanado = Math.round(mission.xp * xpMult);
-        gameState.completedToday[id] = xpGanado || true;
-        gameState.xp += xpGanado;
+        gameState.completedToday[id] = true;
+        gameState.xp += (mission.xp * xpMult);
         gameState.stats[mission.stat] += mission.statVal;
         gameState.coins += 5;
 
@@ -1603,7 +1356,6 @@ function renderBosses() {
 function renderBars() {
     document.getElementById('label-hp').innerText = `${gameState.vitalBars.hp}/100`;
     document.getElementById('bar-hp').style.width = `${gameState.vitalBars.hp}%`;
-    document.getElementById('bar-hp').classList.toggle('critico', gameState.vitalBars.hp < 30);
 
     document.getElementById('label-sanidad').innerText = `${gameState.vitalBars.sanidad}/100`;
     document.getElementById('bar-sanidad').style.width = `${gameState.vitalBars.sanidad}%`;
@@ -1694,13 +1446,6 @@ function buyItem(id, cost) {
     if (id === 'pan') gameState.vitalBars.hp = Math.min(100, gameState.vitalBars.hp + 20);
     if (id === 'agua') gameState.vitalBars.corrupcion = Math.max(0, gameState.vitalBars.corrupcion - 5);
     if (id === 'antorcha_forastero') gameState.bosses.ingles.currentHp = Math.max(0, gameState.bosses.ingles.currentHp - 20);
-    if (id === 'amuleto') gameState.vitalBars.hp += 15;
-    if (id === 'sello_cristiano') { gameState.vitalBars.hp += 20; gameState.vitalBars.sanidad += 20; gameState.vitalBars.luz += 200; }
-    if (id === 'arena') {
-        gameState.vitalBars.hp -= 5;
-        gameState.bosses.monje.currentHp = Math.max(0, gameState.bosses.monje.currentHp - 20);
-    }
-    ajustarBarras();
 
     saveGame();
     renderAll();
@@ -1733,37 +1478,34 @@ function buyHealing(amountHp) {
 }
 
 function payMultaAgotamiento() {
-    if (!gameState.agotado) {
-        alert("No tienes ninguna multa de agotamiento activa.");
-        return;
-    }
     if (gameState.coins < 50) {
         alert("No tienes 50 monedas.");
         return;
     }
     gameState.coins -= 50;
-    gameState.agotado = false;
-    gameState.vitalBars.hp = Math.max(gameState.vitalBars.hp, CONFIG_PENALIZACION.hpMinimoTrasMulta);
+    alert("Sanción cancelada.");
     saveGame();
     renderAll();
-    alert("Sanción cancelada. Vuelves con " + gameState.vitalBars.hp + " HP.");
 }
 
 function finishDay() {
-    if (gameState.diaCerrado && !confirm("Ya cerraste la jornada de hoy.\n\n¿Cerrar otra vez? Se aplicará de nuevo la penalización por los hábitos que no estén marcados.")) return;
+    MISSIONS.forEach(m => {
+        if (!gameState.completedToday[m.id] && m.boss) {
+            let regenVal = Math.round(m.dmg * 1.0);
+            gameState.bosses[m.boss].currentHp = Math.min(
+                gameState.bosses[m.boss].maxHp,
+                gameState.bosses[m.boss].currentHp + regenVal
+            );
+        }
+    });
 
-    const r = aplicarCierreDia(gameState.completedToday, gameState.proteccion);
-    gameState.proteccion = null;
     gameState.completedToday = {};
     gameState.coinRolled = false;
     gameState.coinResult = null;
-    gameState.diaActual = claveDia();
-    gameState.diaCerrado = true;
-    gameState.resumenDia = textoCierre(r);
 
     saveGame();
     renderAll();
-    alert(gameState.resumenDia);
+    alert("Jornada finalizada. El progreso de los hábitos pendientes ha sido restablecido.");
 }
 
 function saveGame() {
@@ -1782,33 +1524,104 @@ function loadGame() {
     }
 }
 
-function exportSaveCode() {
-    saveGame();
-    const saveString = btoa(JSON.stringify(gameState));
-    navigator.clipboard.writeText(saveString).then(() => {
-        alert("Código de partida copiado al portapapeles.");
-    }).catch(() => {
-        prompt("Copia este código manualmente:", saveString);
-    });
+// ---- Guardado por código (compatible con emojis/acentos y con o sin portapapeles) ----
+function saveCodeEncode(obj) {
+    // UTF-8 seguro: btoa solo acepta Latin1 y fallaba con emojis/caracteres especiales
+    const bytes = new TextEncoder().encode(JSON.stringify(obj));
+    let bin = '';
+    bytes.forEach(b => { bin += String.fromCharCode(b); });
+    return btoa(bin);
+}
+
+function saveCodeDecode(code) {
+    const clean = code.replace(/\s+/g, '');
+    const bin = atob(clean);
+    const bytes = Uint8Array.from(bin, c => c.charCodeAt(0));
+    try {
+        return JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes));
+    } catch (e) {
+        // Códigos viejos (generados con btoa directo, en Latin1)
+        return JSON.parse(bin);
+    }
+}
+
+function showSaveStatus(msg, ok) {
+    const el = document.getElementById('saveStatus');
+    if (!el) { alert(msg); return; }
+    el.textContent = msg;
+    el.style.color = ok ? '#8fce7a' : '#e07a5f';
+}
+
+function copyTextFallback(text) {
+    // Plan B para cuando navigator.clipboard no existe o está bloqueado (file://, iframes, http)
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.top = '0';
+    ta.style.left = '0';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    ta.setSelectionRange(0, text.length);
+    let ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+}
+
+async function exportSaveCode() {
+    let saveString;
+    try {
+        saveGame();
+        saveString = saveCodeEncode(gameState);
+    } catch (e) {
+        console.error('Error al generar el código', e);
+        showSaveStatus('No se pudo generar el código de partida.', false);
+        return;
+    }
+
+    let copied = false;
+    if (navigator.clipboard && window.isSecureContext) {
+        try { await navigator.clipboard.writeText(saveString); copied = true; } catch (e) { copied = false; }
+    }
+    if (!copied) copied = copyTextFallback(saveString);
+
+    const input = document.getElementById('saveCodeInput');
+    if (copied) {
+        showSaveStatus('✅ Código copiado al portapapeles.', true);
+    } else {
+        // Último recurso: dejar el código visible y seleccionado para copiarlo a mano
+        if (input) {
+            input.value = saveString;
+            input.focus();
+            input.select();
+        }
+        showSaveStatus('⚠️ No se pudo copiar automáticamente. El código quedó en el cuadro de texto: copialo manualmente (mantené pulsado → Copiar).', false);
+    }
 }
 
 function importSaveCode() {
-    const code = document.getElementById('saveCodeInput').value.trim();
+    const input = document.getElementById('saveCodeInput');
+    const code = input.value.trim();
     if (!code) {
-        alert("Ingresá un código válido.");
+        showSaveStatus('Ingresá un código válido.', false);
         return;
     }
     try {
-        const decoded = JSON.parse(atob(code));
-        gameState = decoded;
-        normalizarEstado();
-        sincronizarDia();
+        const decoded = saveCodeDecode(code);
+        if (!decoded || typeof decoded !== 'object' || Array.isArray(decoded)) throw new Error('Formato inesperado');
+        // Se mezcla con el estado por defecto para no perder campos nuevos
+        gameState = Object.assign({}, gameState, decoded);
         saveGame();
         renderAll();
         revisarCapitulos();
-        alert("¡Partida cargada con éxito!");
-    } catch(e) {
-        alert("Código inválido.");
+        input.value = '';
+        showSaveStatus('✅ ¡Partida cargada con éxito!', true);
+    } catch (e) {
+        console.error('Error al cargar código', e);
+        showSaveStatus('Código inválido.', false);
     }
 }
 
