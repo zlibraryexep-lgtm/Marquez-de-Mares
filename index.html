@@ -894,6 +894,37 @@
         .mapa-texto small { color: var(--text-muted); display: block; margin-top: 4px; }
         @media (min-width: 851px) { .mapa-box { position: sticky; top: 12px; } }
         @media (prefers-reduced-motion: reduce) { .mapa-aura { animation: none; } #mapa-heroe, .mapa-barra > div { transition: none; } }
+        /* ===== Mapa épico + Chamán ===== */
+        .mp-cuervo { animation: mpVuelo 8s ease-in-out infinite; }
+        @keyframes mpVuelo { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-7px, 3px); } }
+        .cham-box { background: repeating-linear-gradient(90deg, rgba(0,0,0,0.3) 0 2px, transparent 2px 48px), linear-gradient(180deg, #1f2a1c 0%, #121810 100%); border: 3px solid #4a5a2c; box-shadow: inset 0 0 40px rgba(0,0,0,0.7), 0 0 0 1px #0d0b08, 0 0 22px rgba(120,220,170,0.12); }
+        .cham-box > *:not(.section-title) { max-width: 760px; margin-left: auto; margin-right: auto; }
+        .cham-box .section-title, .taberna-box .section-title { flex-wrap: wrap; gap: 4px 12px; }
+        .cham-fila { display: flex; gap: 18px; align-items: center; justify-content: center; flex-wrap: wrap; }
+        .cham-retrato { width: 170px; flex: 0 0 170px; height: auto; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.75)); }
+        .cham-panel { flex: 1 1 260px; min-width: 0; }
+        #cham-lectura { background: linear-gradient(180deg, #e9dcbc, #d3c092); color: #2a1a0a; border: 1px solid #8c6a28; border-radius: 3px; box-shadow: inset 0 0 12px rgba(90,60,10,0.35); padding: 12px 14px; margin-bottom: 12px; font-size: 0.92rem; line-height: 1.5; }
+        #cham-lectura h4 { font-family: 'Cinzel', serif; margin: 0 0 4px; font-size: 0.98rem; color: #5a1010; letter-spacing: 0.5px; }
+        #cham-lectura p { margin: 0 0 8px; }
+        #cham-lectura p:last-child { margin-bottom: 0; }
+        .cham-sub { font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 1px; color: #7a5a1e; text-transform: uppercase; margin: 10px 0 4px; border-top: 1px dotted #8c6a28; padding-top: 8px; }
+        .cham-vela { opacity: 0; animation: chamAparece 0.9s ease forwards; }
+        @keyframes chamAparece { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+        .cham-llama { transform-box: fill-box; transform-origin: 50% 100%; animation: chamLlama 1.1s ease-in-out infinite; }
+        @keyframes chamLlama { 0%, 100% { transform: scale(1, 1); } 50% { transform: scale(1.08, 1.2); } }
+        .cham-humo { animation: chamHumo 5s ease-in-out infinite; }
+        @keyframes chamHumo { 0% { opacity: 0; transform: translateY(6px); } 40% { opacity: 0.45; } 100% { opacity: 0; transform: translateY(-18px); } }
+        .cham-cristal { animation: chamCristal 2.6s ease-in-out infinite; }
+        @keyframes chamCristal { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
+        .cham-retrato.activo .cham-cristal { animation-duration: 0.5s; }
+        @media (min-width: 700px) { .cham-retrato { width: 210px; flex-basis: 210px; } #cham-lectura { font-size: 1rem; } }
+        @media (prefers-reduced-motion: reduce) { .mp-cuervo, .cham-llama, .cham-humo, .cham-cristal { animation: none; } .cham-vela { animation: none; opacity: 1; } }
+        /* ===== Copia de seguridad ===== */
+        .respaldo-box > *:not(.section-title) { max-width: 760px; margin-left: auto; margin-right: auto; }
+        .respaldo-estado { text-align: center; margin: 8px auto 14px; font-size: 0.92rem; color: var(--text-muted); }
+        .respaldo-estado.aviso { color: var(--gold-light); border: 1px solid var(--gold-primary); background: rgba(201,160,80,0.12); padding: 8px 12px; border-radius: 3px; }
+        .respaldo-banner { display: none; flex-wrap: wrap; gap: 8px 14px; align-items: center; justify-content: center; text-align: center; background: linear-gradient(180deg, #3a2a10, #24190a); border: 2px solid var(--gold-primary); border-radius: 4px; padding: 10px 14px; margin: 0 0 14px; font-size: 0.9rem; color: var(--gold-light); box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        .respaldo-banner.visible { display: flex; }
     </style>
 </head>
 <body>
@@ -904,6 +935,10 @@
 <button class="btn btn-gold" id="btn-musica" onclick="toggleMusica()" aria-label="Activar o pausar la música">🎵</button>
 
 <div id="game-container">
+    <div class="respaldo-banner" id="respaldo-banner">
+        <span id="respaldo-banner-texto"></span>
+        <span><button class="btn btn-gold" onclick="respDescargar()">Descargar ahora</button> <button class="btn" onclick="respPosponer()">Mañana</button></span>
+    </div>
     <header>
         <h1>El Arquero del Carpio</h1>
         <div class="header-info">
@@ -1040,40 +1075,80 @@
                 <div class="section-title">🗺️ Camino al Castillo</div>
                 <svg class="mapa-svg" viewBox="0 0 320 280" role="img" aria-label="Mapa del camino desde la fogata hasta el castillo">
                     <defs>
-                        <radialGradient id="mp-perg" cx="50%" cy="45%" r="75%"><stop offset="0" stop-color="#ecdcae"/><stop offset="1" stop-color="#c9b07a"/></radialGradient>
+                        <radialGradient id="mp-perg" cx="50%" cy="45%" r="78%"><stop offset="0" stop-color="#efdfb2"/><stop offset="0.7" stop-color="#d8c18a"/><stop offset="1" stop-color="#b99a5c"/></radialGradient>
+                        <radialGradient id="mp-quema" cx="50%" cy="50%" r="72%"><stop offset="0.6" stop-color="#3a220a" stop-opacity="0"/><stop offset="1" stop-color="#2a1706" stop-opacity="0.85"/></radialGradient>
+                        <radialGradient id="mp-antorcha" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ffb347" stop-opacity="0.95"/><stop offset="1" stop-color="#ff8a1f" stop-opacity="0"/></radialGradient>
+                        <linearGradient id="mp-lago" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8fa9a8"/><stop offset="1" stop-color="#5f7e80"/></linearGradient>
+                        <filter id="mp-papel" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves="4" seed="11"/><feColorMatrix type="matrix" values="0 0 0 0 0.36  0 0 0 0 0.24  0 0 0 0 0.1  1.3 0 0 0 -0.42"/></filter>
+                        <filter id="mp-sombra" x="-40%" y="-40%" width="180%" height="180%"><feDropShadow dx="1" dy="1.6" stdDeviation="1.1" flood-color="#2a1706" flood-opacity="0.6"/></filter>
+                        <filter id="mp-blur" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="9"/></filter>
+                        <filter id="mp-nube" x="-30%" y="-60%" width="160%" height="220%"><feGaussianBlur stdDeviation="4"/></filter>
+                        <g id="mp-pino"><path d="M0 -14 L5 -6 H2.5 L6.5 0 H-6.5 L-2.5 -6 H-5 Z" fill="#4c5f31" stroke="#2e3a1c" stroke-width="0.6" stroke-linejoin="round"/><path d="M0 -14 L5 -6 H2.5 L6.5 0 H1 Z" fill="#3a4a26" opacity="0.7"/><rect x="-1" y="0" width="2" height="2.6" fill="#4a2f14"/></g>
+                        <mask id="mp-mask-niebla" maskUnits="userSpaceOnUse" x="0" y="0" width="320" height="280">
+                            <rect width="320" height="280" fill="#fff"/>
+                            <g filter="url(#mp-blur)" fill="#000" stroke="#000">
+                                <path id="mapa-vision" d="M38 236 C88 258 128 232 132 200 C136 168 74 164 96 132 C118 100 196 122 206 96 C214 76 236 84 250 80" fill="none" stroke-width="40" stroke-linecap="round" stroke-dasharray="0 9999"/>
+                                <g id="mapa-vision-heroe" style="transform: translate(38px,236px);"><circle r="46" stroke="none"/></g>
+                                <circle id="mapa-vision-castillo" cx="250" cy="80" r="0" stroke="none"/>
+                            </g>
+                        </mask>
                     </defs>
                     <rect width="320" height="280" fill="url(#mp-perg)"/>
-                    <path d="M0 40 L22 12 L40 32 L58 6 L86 40 Z" fill="#a89468" opacity="0.55"/>
-                    <path d="M40 40 L64 18 L88 40 Z" fill="#96825a" opacity="0.5"/>
-                    <ellipse cx="66" cy="150" rx="30" ry="15" fill="#9fb3b0" opacity="0.6" stroke="#6f8a88" stroke-width="1"/>
-                    <path d="M40 150 q14 -5 28 0 t26 0" fill="none" stroke="#c9dad6" stroke-width="1" opacity="0.7"/>
-                    <g fill="#5d6b3a" opacity="0.8">
-                        <path d="M210 200 l8 -18 l8 18 z"/><path d="M226 210 l7 -16 l7 16 z"/><path d="M196 214 l7 -15 l7 15 z"/>
-                        <path d="M270 190 l8 -18 l8 18 z"/><path d="M286 204 l7 -15 l7 15 z"/>
-                        <path d="M30 96 l7 -15 l7 15 z"/><path d="M46 108 l6 -13 l6 13 z"/>
-                        <path d="M150 262 l7 -15 l7 15 z"/><path d="M168 268 l6 -13 l6 13 z"/>
+                    <rect width="320" height="280" filter="url(#mp-papel)" opacity="0.5"/>
+                    <path d="M22 46 C34 70 52 84 46 110 C42 128 56 138 66 146" fill="none" stroke="#7f9c9c" stroke-width="3.4" stroke-linecap="round"/>
+                    <path d="M22 46 C34 70 52 84 46 110 C42 128 56 138 66 146" fill="none" stroke="#bcd2ce" stroke-width="1" stroke-linecap="round"/>
+                    <ellipse cx="66" cy="152" rx="30" ry="15" fill="url(#mp-lago)" stroke="#4a3418" stroke-width="0.9"/>
+                    <path d="M46 150 q8 -3 16 0 t16 0 M50 158 q7 -2 14 0 t14 0" fill="none" stroke="#c9dad6" stroke-width="0.8" opacity="0.8"/>
+                    <g stroke="#4a3418" stroke-width="0.8" stroke-linejoin="round">
+                        <path d="M-4 52 L26 8 L44 30 L60 2 L96 52 Z" fill="#a08a60"/>
+                        <path d="M26 8 L44 30 L34 52 L14 52 Z" fill="#7d6a45"/>
+                        <path d="M60 2 L96 52 L72 52 Z" fill="#7d6a45"/>
+                        <path d="M60 2 L67 15 L60 11 L54 17 Z" fill="#f4efe0" stroke="none"/>
+                        <path d="M26 8 L32 18 L26 15 L21 20 Z" fill="#f4efe0" stroke="none"/>
+                        <path d="M204 84 L228 46 L244 62 L262 30 L284 60 L300 44 L320 84 Z" fill="#9b8659"/>
+                        <path d="M262 30 L284 60 L270 84 L252 84 Z" fill="#7d6a45"/>
+                        <path d="M228 46 L244 62 L236 84 L214 84 Z" fill="#7d6a45"/>
+                        <path d="M262 30 L268 42 L262 39 L257 44 Z" fill="#f4efe0" stroke="none"/>
+                        <path d="M226 92 L236 80 L264 80 L276 92 Z" fill="#7d6a45"/>
                     </g>
+                    <g stroke="#4a3418" stroke-width="0.5" opacity="0.55"><path d="M30 20 l4 8 M36 24 l4 8 M64 12 l4 10 M72 18 l4 10 M78 26 l3 8 M266 42 l4 8 M272 48 l3 8 M232 56 l3 6"/></g>
+                    <use href="#mp-pino" transform="translate(16,102) scale(1.1)"/><use href="#mp-pino" transform="translate(27,112) scale(1)"/><use href="#mp-pino" transform="translate(12,120) scale(0.9)"/><use href="#mp-pino" transform="translate(30,126) scale(1.2)"/><use href="#mp-pino" transform="translate(60,204) scale(1.1)"/><use href="#mp-pino" transform="translate(73,212) scale(1)"/><use href="#mp-pino" transform="translate(52,216) scale(0.9)"/><use href="#mp-pino" transform="translate(67,226) scale(1.2)"/><use href="#mp-pino" transform="translate(84,222) scale(0.9)"/><use href="#mp-pino" transform="translate(210,192) scale(1.1)"/><use href="#mp-pino" transform="translate(224,202) scale(1)"/><use href="#mp-pino" transform="translate(200,208) scale(0.9)"/><use href="#mp-pino" transform="translate(238,212) scale(1.2)"/><use href="#mp-pino" transform="translate(252,198) scale(1)"/><use href="#mp-pino" transform="translate(268,208) scale(1.1)"/><use href="#mp-pino" transform="translate(284,192) scale(0.9)"/><use href="#mp-pino" transform="translate(292,208) scale(1)"/><use href="#mp-pino" transform="translate(150,62) scale(1.1)"/><use href="#mp-pino" transform="translate(162,70) scale(1)"/><use href="#mp-pino" transform="translate(140,74) scale(0.9)"/><use href="#mp-pino" transform="translate(176,60) scale(1.2)"/><use href="#mp-pino" transform="translate(120,48) scale(1)"/><use href="#mp-pino" transform="translate(132,54) scale(0.9)"/><use href="#mp-pino" transform="translate(190,252) scale(1.1)"/><use href="#mp-pino" transform="translate(204,260) scale(1)"/><use href="#mp-pino" transform="translate(176,264) scale(0.9)"/><use href="#mp-pino" transform="translate(224,258) scale(1.1)"/><use href="#mp-pino" transform="translate(150,236) scale(0.8)"/><use href="#mp-pino" transform="translate(162,244) scale(0.9)"/>
                     <path d="M14 270 l8 -8 l8 8 M20 262 v-14" stroke="#7a1616" stroke-width="1.5" fill="none" opacity="0.6"/>
-                    <path id="mapa-ruta" d="M38 236 C88 258 128 232 132 200 C136 168 74 164 96 132 C118 100 196 122 206 96 C214 76 236 84 250 80" fill="none" stroke="#6b4a1e" stroke-width="3" stroke-dasharray="2 7" stroke-linecap="round"/>
-                    <path id="mapa-recorrido" d="M38 236 C88 258 128 232 132 200 C136 168 74 164 96 132 C118 100 196 122 206 96 C214 76 236 84 250 80" fill="none" stroke="#b8862b" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="0 9999"/>
-                    <g class="mp-est" data-f="0" id="mp-e0"><path d="M-6 6 L6 2 M6 6 L-6 2" stroke="#4a2f14" stroke-width="2.5" stroke-linecap="round"/><path d="M0 0 C-6 -4 -3 -10 0 -14 C3 -10 6 -4 0 0 Z" fill="#d9541e"/><path d="M0 -1 C-3 -3 -1 -7 0 -8 C1 -7 3 -3 0 -1 Z" fill="#f3c14b"/></g>
-                    <g class="mp-est" data-f="0.16" id="mp-e1"><path d="M-11 6 L0 -12 L11 6 Z" fill="#8c6a28" stroke="#3a2a14" stroke-width="1.3"/><path d="M0 -12 L0 6 M-4 6 L0 -2 L4 6" stroke="#3a2a14" stroke-width="1" fill="none"/></g>
-                    <g class="mp-est" data-f="0.34" id="mp-e2"><rect x="-10" y="-4" width="20" height="11" fill="#a07840" stroke="#3a2a14" stroke-width="1.3"/><path d="M-13 -4 L0 -15 L13 -4 Z" fill="#7a3a1a" stroke="#3a2a14" stroke-width="1.3"/><rect x="-2.5" y="1" width="5" height="6" fill="#2a1a0a"/></g>
-                    <g class="mp-est" data-f="0.66" id="mp-e3"><rect x="-13" y="-8" width="26" height="15" fill="#8a8578" stroke="#3a2a14" stroke-width="1.3"/><path d="M-13 -8 v-4 h5 v4 M-2.5 -8 v-4 h5 v4 M8 -8 v-4 h5 v4" fill="#8a8578" stroke="#3a2a14" stroke-width="1.2"/><path d="M-3 7 v-7 a3 3 0 0 1 6 0 v7 z" fill="#2a1a0a"/></g>
-                    <g class="mp-est" data-f="1" id="mp-e4" style="transform-box: fill-box;">
-                        <g id="mapa-castillo" transform="translate(0,-16) scale(1.55)">
-                            <rect x="-9" y="-8" width="18" height="16" fill="#b7b1a0" stroke="#3a2a14" stroke-width="1"/>
-                            <rect x="-17" y="-12" width="9" height="20" fill="#a39d8c" stroke="#3a2a14" stroke-width="1"/><path d="M-18.5 -12 L-12.5 -21 L-6.5 -12 Z" fill="#8b1e1e" stroke="#3a2a14" stroke-width="1"/>
-                            <rect x="8" y="-12" width="9" height="20" fill="#a39d8c" stroke="#3a2a14" stroke-width="1"/><path d="M6.5 -12 L12.5 -21 L18.5 -12 Z" fill="#8b1e1e" stroke="#3a2a14" stroke-width="1"/>
-                            <path d="M-9 -8 v-3 h3 v3 M-1.5 -8 v-3 h3 v3 M6 -8 v-3 h3 v3" fill="#b7b1a0" stroke="#3a2a14" stroke-width="0.9"/>
-                            <path d="M-3 8 v-7 a3 3 0 0 1 6 0 v7 z" fill="#2a1a0a"/>
-                            <path d="M0 -8 V-24" stroke="#3a2a14" stroke-width="1"/><path d="M0 -24 L9 -21 L0 -18 Z" fill="#c9a050" stroke="#3a2a14" stroke-width="0.8"/>
+                    <g transform="translate(288,242)" stroke="#4a3418" stroke-width="0.8"><path d="M0 -16 L3 -3 L16 0 L3 3 L0 16 L-3 3 L-16 0 L-3 -3 Z" fill="#c9a050"/><circle r="4.5" fill="#efdfb2"/><text x="-2.6" y="-19" font-size="8" fill="#4a3418" stroke="none" font-family="serif" font-weight="bold">N</text></g>
+                    <path id="mapa-ruta" d="M38 236 C88 258 128 232 132 200 C136 168 74 164 96 132 C118 100 196 122 206 96 C214 76 236 84 250 80" fill="none" stroke="#5a3a10" stroke-width="3" stroke-dasharray="2 7" stroke-linecap="round"/>
+                    <path id="mapa-recorrido-borde" d="M38 236 C88 258 128 232 132 200 C136 168 74 164 96 132 C118 100 196 122 206 96 C214 76 236 84 250 80" fill="none" stroke="#4a2f0c" stroke-width="7" stroke-linecap="round" stroke-dasharray="0 9999" opacity="0.85"/>
+                    <path id="mapa-recorrido" d="M38 236 C88 258 128 232 132 200 C136 168 74 164 96 132 C118 100 196 122 206 96 C214 76 236 84 250 80" fill="none" stroke="#e0a83a" stroke-width="4" stroke-linecap="round" stroke-dasharray="0 9999"/>
+                    <g class="mp-est" data-f="0" id="mp-e0" filter="url(#mp-sombra)"><path d="M-6 6 L6 2 M6 6 L-6 2" stroke="#4a2f14" stroke-width="2.5" stroke-linecap="round"/><circle cx="0" cy="-2" r="9" fill="url(#mp-antorcha)" opacity="0.6"/><path d="M0 0 C-6 -4 -3 -10 0 -14 C3 -10 6 -4 0 0 Z" fill="#d9541e"/><path d="M0 -1 C-3 -3 -1 -7 0 -8 C1 -7 3 -3 0 -1 Z" fill="#f3c14b"/></g>
+                    <g class="mp-est" data-f="0.16" id="mp-e1" filter="url(#mp-sombra)"><path d="M-12 6 L0 -13 L12 6 Z" fill="#8c6a28" stroke="#3a2a14" stroke-width="1.3"/><path d="M0 -13 L12 6 L2 6 Z" fill="#6b4f1c" opacity="0.7"/><path d="M0 -13 L0 6 M-4 6 L0 -2 L4 6" stroke="#3a2a14" stroke-width="1" fill="none"/><path d="M0 -13 V-19" stroke="#3a2a14" stroke-width="1"/><path d="M0 -19 L6 -17 L0 -15 Z" fill="#8b1e1e"/></g>
+                    <g class="mp-est" data-f="0.34" id="mp-e2" filter="url(#mp-sombra)"><rect x="-11" y="-4" width="22" height="11" fill="#a07840" stroke="#3a2a14" stroke-width="1.3"/><path d="M-14 -4 L0 -16 L14 -4 Z" fill="#7a3a1a" stroke="#3a2a14" stroke-width="1.3"/><rect x="-2.5" y="1" width="5" height="6" fill="#2a1a0a"/><rect x="5" y="-1" width="3.5" height="3.5" fill="#ffcf6b"/><rect x="6" y="-13" width="3" height="6" fill="#5a4a3a" stroke="#3a2a14" stroke-width="0.8"/></g>
+                    <g class="mp-est" data-f="0.66" id="mp-e3" filter="url(#mp-sombra)"><rect x="-15" y="-8" width="30" height="16" fill="#8a8578" stroke="#3a2a14" stroke-width="1.3"/><rect x="-15" y="-14" width="7" height="22" fill="#7a7568" stroke="#3a2a14" stroke-width="1.2"/><rect x="8" y="-14" width="7" height="22" fill="#7a7568" stroke="#3a2a14" stroke-width="1.2"/><path d="M-15 -14 v-3 h2.3 v3 M-11.5 -14 v-3 h2.3 v3 M8 -14 v-3 h2.3 v3 M11.7 -14 v-3 h2.3 v3 M-8 -8 v-3 h3 v3 M-1.5 -8 v-3 h3 v3 M5 -8 v-3 h3 v3" fill="#8a8578" stroke="#3a2a14" stroke-width="1"/><path d="M-3.4 8 v-7 a3.4 3.4 0 0 1 6.8 0 v7 z" fill="#2a1a0a"/><path d="M0 -17 V-25" stroke="#3a2a14" stroke-width="1"/><path d="M0 -25 L7 -23 L0 -21 Z" fill="#8b1e1e"/></g>
+                    <g class="mp-est" data-f="1" id="mp-e4" filter="url(#mp-sombra)">
+                        <g id="mapa-castillo" transform="translate(0,-12) scale(1.3)">
+                            <circle cx="0" cy="4" r="16" fill="url(#mp-antorcha)" opacity="0.5"/>
+                            <rect x="-14" y="-4" width="28" height="12" fill="#b7b1a0" stroke="#3a2a14" stroke-width="1"/>
+                            <path d="M-14 -4 v-3 h3 v3 M-8 -4 v-3 h3 v3 M5 -4 v-3 h3 v3 M11 -4 v-3 h3 v3" fill="#b7b1a0" stroke="#3a2a14" stroke-width="0.9"/>
+                            <rect x="-6" y="-16" width="12" height="20" fill="#c2bcaa" stroke="#3a2a14" stroke-width="1"/>
+                            <path d="M-6 -16 v-3 h3 v3 M-1.5 -16 v-3 h3 v3 M3 -16 v-3 h3 v3" fill="#c2bcaa" stroke="#3a2a14" stroke-width="0.9"/>
+                            <rect x="-3" y="-27" width="6" height="12" fill="#b7b1a0" stroke="#3a2a14" stroke-width="1"/>
+                            <path d="M-4.6 -27 L0 -36 L4.6 -27 Z" fill="#8b1e1e" stroke="#3a2a14" stroke-width="0.9"/>
+                            <path d="M0 -36 V-43" stroke="#3a2a14" stroke-width="0.9"/><path d="M0 -43 L8 -41 L0 -38.5 Z" fill="#c9a050" stroke="#3a2a14" stroke-width="0.7"/>
+                            <rect x="-20" y="-14" width="8" height="22" fill="#a39d8c" stroke="#3a2a14" stroke-width="1"/><path d="M-21.6 -14 L-16 -23 L-10.4 -14 Z" fill="#8b1e1e" stroke="#3a2a14" stroke-width="0.9"/>
+                            <rect x="12" y="-14" width="8" height="22" fill="#a39d8c" stroke="#3a2a14" stroke-width="1"/><path d="M10.4 -14 L16 -23 L21.6 -14 Z" fill="#8b1e1e" stroke="#3a2a14" stroke-width="0.9"/>
+                            <rect x="-17" y="-8" width="2" height="3.4" fill="#ffcf6b"/><rect x="15" y="-8" width="2" height="3.4" fill="#ffcf6b"/><rect x="-1" y="-11" width="2" height="3.4" fill="#ffcf6b"/><rect x="-1" y="-22" width="2" height="3" fill="#ffcf6b"/>
+                            <path d="M-3.4 8 v-6 a3.4 3.4 0 0 1 6.8 0 v6 z" fill="#1a0f06"/><path d="M-2 8 v-5 a2 2 0 0 1 4 0 v5 z" fill="#ffb347" opacity="0.55"/>
                         </g>
                     </g>
+                    <g id="mapa-nubes" filter="url(#mp-nube)" fill="#3d3547" style="opacity:0.8"><ellipse cx="230" cy="34" rx="30" ry="12"/><ellipse cx="270" cy="26" rx="34" ry="13"/><ellipse cx="300" cy="44" rx="24" ry="10"/><ellipse cx="250" cy="48" rx="26" ry="9"/></g>
+                    <g class="mp-cuervo" fill="none" stroke="#1c130b" stroke-width="1.4" stroke-linecap="round"><path d="M222 56 q3 -4 6 0 q3 -4 6 0"/><path d="M296 70 q2.5 -3 5 0 q2.5 -3 5 0"/><path d="M204 70 q2 -3 4 0 q2 -3 4 0"/></g>
+                    <rect id="mapa-niebla" width="320" height="280" fill="#241608" opacity="0.5" mask="url(#mp-mask-niebla)"/>
+                    <rect width="320" height="280" fill="url(#mp-quema)"/>
+                    <rect x="3" y="3" width="314" height="274" fill="none" stroke="#4a2f14" stroke-width="1.6"/><rect x="7" y="7" width="306" height="266" fill="none" stroke="#4a2f14" stroke-width="0.6"/>
+                    <path d="M3 14 L14 3 M306 3 L317 14 M3 266 L14 277 M306 277 L317 266" stroke="#4a2f14" stroke-width="1.2"/>
                     <g id="mapa-heroe" style="transform: translate(38px,236px);">
-                        <circle class="mapa-aura" r="11" fill="#f3c14b"/>
-                        <circle r="7.5" fill="#1c130b" stroke="#f3e5ab" stroke-width="2"/>
-                        <path d="M0 -4 L3.5 -1 L2.5 3.5 L0 5 L-2.5 3.5 L-3.5 -1 Z" fill="#8b1e1e" stroke="#c9a050" stroke-width="0.8"/>
+                        <circle class="mapa-aura" r="12" fill="#f3c14b"/>
+                        <g filter="url(#mp-sombra)"><path d="M0 -8 V-21" stroke="#3a2a14" stroke-width="1.3"/><path d="M0 -21 L10 -18 L0 -14.5 Z" fill="#8b1e1e" stroke="#3a2a14" stroke-width="0.7"/>
+                        <circle r="8.2" fill="#1c130b" stroke="#f3e5ab" stroke-width="2"/>
+                        <path d="M0 -4.6 L4 -1.2 L2.8 4 L0 5.8 L-2.8 4 L-4 -1.2 Z" fill="#8b1e1e" stroke="#c9a050" stroke-width="0.9"/></g>
                     </g>
                 </svg>
                 <div class="mapa-barra"><div id="mapa-barra-fill"></div></div>
@@ -1158,6 +1233,71 @@
             <button class="btn" id="tab-btn-doblar" onclick="tabDoblar()">Doblar</button>
         </div>
         <div class="tab-nota">Las fichas son tus monedas: apuestas lo que elijas. Blackjack paga 3 a 2. El Encapuchado se planta en 17. Máximo 10 apuestas por día; el contador se reinicia a medianoche.</div>
+    </div>
+
+    <!-- EL CHAMÁN -->
+    <div class="section-box cham-box" id="chaman">
+        <div class="section-title"><span>🔮 El Chamán de las Brumas</span><span id="cham-estado" style="font-size:0.8rem;">Sin consultar hoy</span></div>
+        <div class="cham-fila">
+            <svg class="cham-retrato" id="cham-retrato" viewBox="0 0 200 230" role="img" aria-label="El Chamán de las Brumas junto a su fuego">
+                <defs>
+                    <radialGradient id="ch-luna" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#bfe8d8" stop-opacity="0.35"/><stop offset="1" stop-color="#bfe8d8" stop-opacity="0"/></radialGradient>
+                    <radialGradient id="ch-fuego" cx="50%" cy="70%" r="50%"><stop offset="0" stop-color="#ffb347" stop-opacity="0.8"/><stop offset="1" stop-color="#ff8a1f" stop-opacity="0"/></radialGradient>
+                    <radialGradient id="ch-cristal" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#b8fff0" stop-opacity="0.9"/><stop offset="1" stop-color="#5fe0c8" stop-opacity="0"/></radialGradient>
+                    <filter id="ch-brillo" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.2"/></filter>
+                </defs>
+                <circle cx="100" cy="100" r="96" fill="url(#ch-luna)"/>
+                <circle cx="100" cy="196" r="46" fill="url(#ch-fuego)"/>
+                <path d="M52 230 C48 176 70 152 100 150 C130 152 152 176 148 230 Z" fill="#23342a" stroke="#0d0b08" stroke-width="2"/>
+                <path d="M100 152 L100 230 M84 170 L84 230 M116 170 L116 230" stroke="#3a5240" stroke-width="1.2" opacity="0.7"/>
+                <path d="M44 176 C56 150 80 142 100 144 C120 142 144 150 156 176 C142 168 128 170 116 178 C108 172 92 172 84 178 C72 170 58 168 44 176 Z" fill="#6b4a2a" stroke="#2a1a0a" stroke-width="1.5"/>
+                <path d="M56 170 l4 6 M66 164 l3 7 M78 160 l2 8 M122 160 l-2 8 M134 164 l-3 7 M144 170 l-4 6" stroke="#3a2610" stroke-width="1.2" stroke-linecap="round"/>
+                <path d="M73 118 C70 150 88 172 100 176 C112 172 130 150 127 118 C116 134 84 134 73 118 Z" fill="#cfcac0" stroke="#7d7a70" stroke-width="1"/>
+                <path d="M74 98 C64 124 66 150 78 166 L86 154 C81 138 83 120 84 104 Z" fill="#cfcac0" stroke="#7d7a70" stroke-width="1"/>
+                <path d="M126 98 C136 124 134 150 122 166 L114 154 C119 138 117 120 116 104 Z" fill="#cfcac0" stroke="#7d7a70" stroke-width="1"/>
+                <ellipse cx="100" cy="104" rx="26" ry="30" fill="#b98a5e" stroke="#4a2f14" stroke-width="1.4"/>
+                <path d="M73 98 C72 76 86 70 100 70 C114 70 128 76 127 98 C118 84 82 84 73 98 Z" fill="#cfcac0" stroke="#7d7a70" stroke-width="1"/>
+                <path d="M78 104 L94 100 M106 100 L122 104" stroke="#c9a050" stroke-width="3" stroke-linecap="round"/>
+                <path d="M80 112 l12 -2 M108 110 l12 2" stroke="#f3efe0" stroke-width="1.6" stroke-linecap="round"/>
+                <ellipse cx="90" cy="98" rx="5.5" ry="3" fill="#dfeaff"/><ellipse cx="110" cy="98" rx="5.5" ry="3" fill="#dfeaff"/>
+                <ellipse cx="90" cy="98" rx="6" ry="3.4" fill="#bff5e8" opacity="0.6" filter="url(#ch-brillo)"/><ellipse cx="110" cy="98" rx="6" ry="3.4" fill="#bff5e8" opacity="0.6" filter="url(#ch-brillo)"/>
+                <path d="M100 100 L98 110 L102 111" fill="none" stroke="#6b4a2a" stroke-width="1.2"/>
+                <path d="M76 78 C90 72 110 72 124 78" fill="none" stroke="#6b4a2a" stroke-width="5" stroke-linecap="round"/>
+                <path d="M82 76 C72 60 68 46 60 36 M72 58 C64 54 58 54 52 48 M68 48 C66 40 62 34 62 26" fill="none" stroke="#d8cdb0" stroke-width="3.6" stroke-linecap="round"/>
+                <path d="M118 76 C128 60 132 46 140 36 M128 58 C136 54 142 54 148 48 M132 48 C134 40 138 34 138 26" fill="none" stroke="#d8cdb0" stroke-width="3.6" stroke-linecap="round"/>
+                <path d="M72 92 C60 96 56 110 62 124" fill="none" stroke="#7a1616" stroke-width="3" stroke-linecap="round"/><ellipse cx="62" cy="126" rx="2.6" ry="4" fill="#c9a050"/>
+                <path d="M128 92 C140 96 144 110 138 124" fill="none" stroke="#2f6b5a" stroke-width="3" stroke-linecap="round"/><ellipse cx="138" cy="126" rx="2.6" ry="4" fill="#c9a050"/>
+                <g fill="#e8e0c8" stroke="#6b5a3a" stroke-width="0.6"><circle cx="76" cy="168" r="2.4"/><circle cx="83" cy="173" r="2.4"/><circle cx="91" cy="176" r="2.6"/><circle cx="100" cy="177" r="3"/><circle cx="109" cy="176" r="2.6"/><circle cx="117" cy="173" r="2.4"/><circle cx="124" cy="168" r="2.4"/></g>
+                <path d="M162 74 L162 226" stroke="#4a2f14" stroke-width="5" stroke-linecap="round"/>
+                <path d="M158 96 C150 90 150 80 158 78 M166 110 C174 104 174 94 166 92" fill="none" stroke="#4a2f14" stroke-width="2.4" stroke-linecap="round"/>
+                <circle class="cham-cristal" cx="162" cy="62" r="17" fill="url(#ch-cristal)"/>
+                <path class="cham-cristal" d="M162 46 L171 60 L162 78 L153 60 Z" fill="#7fe0d0" stroke="#1d5a4c" stroke-width="1.3"/>
+                <path d="M162 46 L171 60 L162 62 Z" fill="#bff5e8" opacity="0.8"/>
+                <g stroke="#4a3a2a" stroke-width="1"><ellipse cx="80" cy="222" rx="10" ry="6" fill="#6f6b60"/><ellipse cx="100" cy="226" rx="10" ry="6" fill="#7a766a"/><ellipse cx="120" cy="222" rx="10" ry="6" fill="#6f6b60"/></g>
+                <path d="M84 220 L116 220 M88 224 L112 214 M112 224 L88 214" stroke="#4a2f14" stroke-width="3" stroke-linecap="round"/>
+                <path class="cham-llama" d="M100 218 C88 208 92 196 100 186 C108 196 112 208 100 218 Z" fill="#e0641e"/>
+                <path class="cham-llama" d="M100 216 C94 209 96 202 100 196 C104 202 106 209 100 216 Z" fill="#f7c948" style="animation-delay:-0.4s"/>
+                <g class="cham-humo" fill="none" stroke="#d6d0c0" stroke-width="2.2" stroke-linecap="round"><path d="M96 184 C90 176 104 170 98 162"/></g>
+                <g class="cham-humo" fill="none" stroke="#d6d0c0" stroke-width="2" stroke-linecap="round" style="animation-delay:-2.5s"><path d="M106 186 C112 178 98 172 106 164"/></g>
+            </svg>
+            <div class="cham-panel">
+                <div id="cham-lectura"><p>El Chamán aguarda junto al fuego, con los ojos velados por la niebla. Puede ver tu jornada, tu ritmo y el camino que te queda hasta el Castillo. Consúltalo una vez por día.</p></div>
+                <button class="btn btn-gold" id="cham-btn" onclick="chamConsultar()">Consultar al Chamán</button>
+            </div>
+        </div>
+        <div class="tab-nota">Cada día trae un presagio, un consejo y una visión de tu futuro. Cambian a medianoche.</div>
+    </div>
+
+    <!-- COPIA DE SEGURIDAD -->
+    <div class="section-box respaldo-box" id="respaldo">
+        <div class="section-title"><span>💾 Copia de seguridad</span></div>
+        <div class="respaldo-estado" id="respaldo-estado"></div>
+        <div class="tab-acciones">
+            <button class="btn btn-gold" onclick="respDescargar()">⬇ Descargar partida (archivo)</button>
+            <button class="btn" onclick="document.getElementById('respaldo-archivo').click()">⬆ Cargar desde archivo</button>
+            <input type="file" id="respaldo-archivo" accept=".txt,text/plain" hidden onchange="respCargar(this)">
+        </div>
+        <div class="tab-nota" id="respaldo-msg">El archivo guarda toda tu partida: XP, monedas, mapa, Chamán y taberna. Guárdalo en Drive o mándatelo por mail. Si algún día se borran los datos del navegador, cárgalo aquí y recuperas todo.</div>
     </div>
 </div>
 
@@ -2564,7 +2704,13 @@ function renderMapa() {
     if (L) {
         const pt = ruta.getPointAtLength(L * f);
         document.getElementById('mapa-heroe').style.transform = 'translate(' + pt.x.toFixed(1) + 'px,' + pt.y.toFixed(1) + 'px)';
-        document.getElementById('mapa-recorrido').setAttribute('stroke-dasharray', (L * f).toFixed(1) + ' ' + (L + 50).toFixed(1));
+        const dash = (L * f).toFixed(1) + ' ' + (L + 50).toFixed(1);
+        ['mapa-recorrido', 'mapa-recorrido-borde', 'mapa-vision'].forEach(id => document.getElementById(id).setAttribute('stroke-dasharray', dash));
+        document.getElementById('mapa-vision-heroe').style.transform = 'translate(' + pt.x.toFixed(1) + 'px,' + pt.y.toFixed(1) + 'px)';
+        const fin = ruta.getPointAtLength(L), cv = document.getElementById('mapa-vision-castillo');
+        cv.setAttribute('cx', fin.x.toFixed(1)); cv.setAttribute('cy', fin.y.toFixed(1)); cv.setAttribute('r', (84 * f * f).toFixed(1));
+        document.getElementById('mapa-nubes').style.opacity = ((1 - f) * 0.8).toFixed(2);
+        document.getElementById('mapa-niebla').setAttribute('opacity', (0.5 * (1 - f * f)).toFixed(2));
     }
     document.getElementById('mapa-castillo').style.opacity = (0.6 + 0.4 * f).toFixed(2);
     const pct = Math.min(100, xp / MAPA_META_XP * 100);
@@ -2604,6 +2750,318 @@ function renderMapa() {
     window.renderAll = function () { ra.apply(this, arguments); try { renderMapa(); } catch (e) { console.error(e); } };
 })();
 renderMapa();
+</script>
+<script>
+// ===== EL CHAMÁN DE LAS BRUMAS: presagio, consejo y visión diarios =====
+const CHAM_PRESAGIOS = [
+    ['Luna Creciente', 'El humo se eleva recto: hoy el esfuerzo dará fruto.'],
+    ['Cuervo en el Alba', 'Un cuervo cruza el cielo: presta atención a los pequeños detalles.'],
+    ['Niebla en el Valle', 'Todo parece confuso al empezar; el camino se aclara al avanzar.'],
+    ['Viento del Norte', 'Un viento frío te empuja: no te detengas, abrígate de constancia.'],
+    ['Estrella Fugaz', 'Una chispa breve de inspiración: aprovéchala antes de que se apague.'],
+    ['Río Sereno', 'Las aguas están quietas: buen día para el estudio profundo.'],
+    ['Trueno Lejano', 'Se acerca una prueba: prepárate con calma, no con miedo.'],
+    ['Brasas Vivas', 'Tu fuego interior arde: es buen día para lo difícil.'],
+    ['Aurora Dorada', 'La luz de la mañana favorece a quien madruga.'],
+    ['Sombra Larga', 'Mide tus fuerzas: hoy conviene pocas metas, bien cumplidas.'],
+    ['Lobo Aullando', 'Un aullido lejano te recuerda que el esfuerzo a veces es solitario, pero no inútil.'],
+    ['Rocío Temprano', 'El rocío brilla sobre la hierba: los comienzos pequeños traen grandes cosechas.'],
+    ['Puente de Piedra', 'Se abre un paso firme: hoy puedes cruzar lo que ayer parecía imposible.'],
+    ['Halcón en Vuelo', 'Un halcón fija su presa: elige un solo objetivo y no lo sueltes.'],
+    ['Campana Lejana', 'Suena una campana: hay algo que llevas tiempo posponiendo, y hoy es el momento.'],
+    ['Bosque Callado', 'El bosque calla: buen día para trabajar en silencio y sin prisa.'],
+    ['Eclipse Breve', 'Una sombra pasa y se va: si algo te turba, sabe que es pasajero.'],
+    ['Espada Clavada', 'Un arma descansa en la piedra: hoy la fuerza está en la paciencia, no en el golpe.'],
+    ['Cometa Rojo', 'Algo inusual cruza el cielo: aprovecha lo inesperado en vez de temerle.'],
+    ['Hogar Encendido', 'Una lumbre acoge al viajero: cuida tu descanso, también es parte del camino.']
+];
+const CHAM_CONSEJOS = [
+    'Empieza por lo más difícil mientras la niebla de la mañana aún cubre tus dudas.',
+    'Una flecha lanzada con calma vale más que diez lanzadas con furia. Haz una cosa a la vez.',
+    'El Castillo no se conquista de un salto: cada hábito de hoy es un paso del camino.',
+    'Deja el teléfono lejos de tu mano durante tu primera hora de estudio. Los espíritus del ruido odian el silencio.',
+    'Estudia en bloques breves con descansos: el guerrero que nunca descansa se quiebra antes de la batalla.',
+    'Bebe agua antes que cualquier otra cosa. Hasta el río más fuerte nace de una gota.',
+    'Si hoy la voluntad flaquea, prométete solo cinco minutos. Casi siempre vuelve cuando ya empezaste.',
+    'Repasa lo aprendido ayer antes de aprender algo nuevo: la memoria es un fuego que hay que alimentar.',
+    'No midas tu valor por un mal día; mídelo por las veces que volviste.',
+    'Duerme temprano: los grandes hechizos se preparan de noche y se lanzan de día.',
+    'Camina un rato bajo el cielo abierto: el cuerpo quieto vuelve espeso el pensamiento.',
+    'Prepara hoy lo que necesitarás mañana: tus libros, tu ropa, tu intención.',
+    'El inglés se aprende como se aprende a caminar: escuchando mucho antes de hablar bien.',
+    'Un pequeño hábito repetido es un muro; un gran esfuerzo aislado es apenas un ruido.',
+    'Come algo de verdad antes de entrenar y descansa después: la fuerza se forja en el descanso.',
+    'Escribe tres tareas y solo tres para hoy. Un mapa con demasiados caminos no lleva a ninguna parte.',
+    'Silencia las distracciones cuando trabajes: cada aviso es un cuervo que te roba una idea.',
+    'Habla hoy con alguien de confianza; hasta el viajero más fuerte agradece una fogata compartida.',
+    'Cuando falles, no huyas del error: estúdialo como quien estudia un mapa para no perderse dos veces.',
+    'Termina lo que empiezas antes de abrir una puerta nueva.',
+    'Respira hondo tres veces antes de una tarea difícil. El arquero primero respira, luego dispara.',
+    'Celebra en pequeño cada hábito cumplido: el ánimo también se alimenta.',
+    'Ordena tu espacio: un escritorio en orden es una fortaleza antes del asedio.',
+    'Evita las pantallas la última hora antes de dormir: sus luces confunden a los espíritus del sueño.',
+    'No compares tu camino con el de otros: cada peregrino tiene su propio sendero.',
+    'Estira el cuerpo al levantarte; hasta el roble se prepara antes de la tormenta.',
+    'La disciplina es un músculo: hoy toca ejercitarla aunque no tengas ganas.',
+    'Pide ayuda si algo pesa demasiado; ningún caballero derrota solo a todos los dragones.',
+    'Al terminar tu jornada, anota algo que salió bien. La gratitud ilumina el camino de regreso.',
+    'Un pomodoro a la vez: cuando suene el reloj, descansa de verdad. Estira, respira y mira a lo lejos.',
+    'Explica en voz alta lo que estudiaste, como si se lo contaras a un aprendiz. Lo que no sabes explicar, aún no lo dominas.',
+    'Resuelve primero los problemas que te dan miedo; los fáciles siempre esperan.',
+    'Cuando un ejercicio no salga, déjalo reposar diez minutos y vuelve: la mente también trabaja mientras descansa.',
+    'Escucha inglés mientras haces cosas simples: cada minuto de oído suma a tu tesoro.',
+    'Anota las palabras nuevas que oigas y repásalas hoy mismo, antes de que el viento las borre.',
+    'Lee en inglés algo que te apasione: la curiosidad vale más que el diccionario.',
+    'Calienta antes de entrenar: el arco tensado sin cuidado se quiebra.',
+    'Entrena aunque sea poco: media hora hoy vale más que una hora prometida para mañana.',
+    'Anota tus series y repeticiones; lo que se mide, se forja.',
+    'Escoge una sola distracción y destiérrala por hoy.',
+    'Usa el teléfono como herramienta, no como refugio: ábrelo con un propósito y ciérralo al cumplirlo.',
+    'Empieza el día sin pantallas los primeros minutos; que tu primera batalla sea contigo, no con el ruido.',
+    'Deja tu cama hecha: la primera victoria del día es la más barata.',
+    'Si dudas entre dos tareas, elige la que más miedo te da dejar pendiente.',
+    'Programa el descanso como programas la batalla; sin él no hay guerrero al día siguiente.',
+    'Agradece a alguien hoy. Las buenas palabras son una moneda que nunca se devalúa.',
+    'No pospongas esa llamada que sabes que debes hacer: lo pendiente cansa más que la tarea.',
+    'La taberna es para reír un rato, no para huir de tus deberes. Apuesta solo lo que te sobre.',
+    'Gasta tus monedas con intención: una poción a tiempo vale más que diez caprichos.',
+    'Mira tu camino al Castillo: no hace falta correr, hace falta no detenerse.',
+    'Aprende a decir «no» a lo que te aleja de tu camino, sin culpa.',
+    'Guarda el trabajo difícil para las horas en que tu mente está más clara y deja lo simple para las cansadas.',
+    'Deja preparado esta noche lo primero que harás mañana; la mañana agradece a quien planeó.',
+    'Si te sientes abrumado, escribe en un pergamino todo lo que pesa: sobre el papel, los dragones se hacen pequeños.',
+    'Camina mientras repasas de memoria lo que estudiaste: el movimiento despierta el recuerdo.',
+    'Haz una pausa antes de responder cuando estés molesto: el arquero sabio no dispara enojado.',
+    'Come con calma y sin pantallas al menos una vez hoy.',
+    'La constancia no exige ganas, exige compromiso; las ganas llegan después.',
+    'Cada vez que cumples lo que prometiste, tu palabra vale más para ti mismo.',
+    'Celebra los días en que hiciste lo mínimo estando cansado: esos son los que forjan la racha.',
+    'Aprende algo pequeño y nuevo hoy, aunque sea una sola cosa: el mundo es un mapa sin terminar.',
+    'Pasa tiempo con quienes te suman; el fuego se contagia, pero también la ceniza.',
+    'Repasa tu semana los domingos: los grandes generales revisan sus batallas antes de la próxima.',
+    'No confundas estar ocupado con avanzar. Pregúntate: ¿esto me acerca al Castillo?',
+    'Fija una hora de cierre para tu jornada de estudio: sin final no hay descanso, y sin descanso no hay estudio.',
+    'Toma sol unos minutos por la mañana; hasta las plantas del bosque lo saben.',
+    'Estudia con una sola pestaña abierta: un solo camino, una sola meta.',
+    'Si un hábito te cuesta, hazlo más pequeño hasta que sea imposible fallar, y luego hazlo crecer.',
+    'Recompénsate después de terminar, no antes: la miel sabe mejor tras la batalla.',
+    'Deja que el aburrimiento te visite sin correr al teléfono; de él nacen las buenas ideas.',
+    'Escribe cada noche una frase sobre lo que aprendiste. En un año tendrás un libro entero.',
+    'Los errores son maestros que no cobran: agradece los de hoy.',
+    'Respira por la nariz y estira la espalda cada hora; el cuerpo también estudia.',
+    'Cuando dudes de tu avance, mira atrás: quizá ya recorriste más camino del que crees.',
+    'Ordena tres cosas de tu casa hoy, solo tres. La fortaleza se levanta piedra a piedra.',
+    'Elige la calma en la discusión inútil y guarda tu energía para las batallas que valen.',
+    'Ofrece ayuda a alguien; compartir lo aprendido también es una forma de estudiar.',
+    'Cuida tu sueño como cuidas tus armas: sin filo no hay victoria.',
+    'No esperes sentirte listo. Comienza torpe y corrige en el camino.'
+];
+let chamPintado = '';
+function chamHoy() {
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function chamNombre(m) { return m.name.replace(/^[^\p{L}\p{N}]+/u, '').trim(); }
+function chamVision() {
+    const v = [];
+    const pend = MISSIONS.filter(m => !m.isSub && !gameState.completedToday[m.id]).sort((a, b) => b.xp - a.xp);
+    const hechas = MISSIONS.filter(m => gameState.completedToday[m.id]).length;
+    if (pend.length === 0) {
+        v.push('Veo tu jornada completa: el humo sube recto y los jefes retroceden.');
+    } else {
+        const m = pend[0], jefe = (m.boss && gameState.bosses[m.boss]) ? gameState.bosses[m.boss].name : null;
+        if (hechas === 0) v.push('Veo un día por escribir. Empieza por «' + chamNombre(m) + '», la más valiosa que aún te espera.');
+        else v.push('Veo que «' + chamNombre(m) + '» aún te espera' + (jefe ? ': si la dejas pasar, ' + jefe + ' recupera fuerzas al caer la noche.' : '.'));
+    }
+    const vb = gameState.vitalBars || {};
+    if (vb.hp <= 40) v.push('Veo sombras sobre tu cuerpo: tu vitalidad flaquea. Descansa, come bien y bebe agua.');
+    else if (vb.corrupcion >= 60) v.push('La corrupción se acumula a tu alrededor: hoy conviene silencio, luz y hábitos simples.');
+    const racha = (gameState.streaks && gameState.streaks.general) || 0;
+    if (racha >= 3) v.push('Tu racha de ' + racha + ' días arde como una hoguera: cuídala.');
+    const tb = gameState.taberna;
+    if (tb && tb.fecha === chamHoy() && tb.netoHoy <= -50) v.push('Veo la suerte huyendo de tu mesa en la taberna: sal a tiempo, que esas monedas también son horas de tu esfuerzo.');
+    else if (gameState.coins >= 300) v.push('Veo tu bolsa pesada de monedas: guarda algunas para pociones y para la armería.');
+    const xp = gameState.xp;
+    if (xp >= MAPA_META_XP) {
+        v.push('Ya alcanzaste el Castillo. Lo que venga después lo escribes tú.');
+    } else {
+        let t = 'Al final del camino el Castillo te espera: te faltan ' + mapaFmt(MAPA_META_XP - xp) + ' XP.';
+        const m = gameState.mapa;
+        if (m && m.inicio) {
+            const dias = Math.max(1, Math.floor((Date.now() - new Date(m.inicio + 'T00:00:00').getTime()) / 864e5) + 1);
+            const ritmo = (xp - m.xpInicio) / dias;
+            if (dias >= 3 && ritmo > 0) {
+                const rest = Math.ceil((MAPA_META_XP - xp) / ritmo);
+                t += rest > 730 ? ' A este paso, la travesía será larga: más de dos años.' : ' A este ritmo lo verás alzarse en unos ' + rest + ' días.';
+            }
+        }
+        v.push(t);
+    }
+    return v;
+}
+function chamConsultar() {
+    const hoy = chamHoy();
+    if (!gameState.chaman || gameState.chaman.fecha !== hoy) {
+        const d = Math.floor(new Date(hoy + 'T00:00:00').getTime() / 864e5);
+        gameState.chaman = {
+            fecha: hoy,
+            presagio: CHAM_PRESAGIOS[(d * 7 + 3) % CHAM_PRESAGIOS.length],
+            consejo: CHAM_CONSEJOS[d % CHAM_CONSEJOS.length],
+            vision: chamVision()
+        };
+        saveGame();
+        chamPintado = '';
+        renderChaman(true);
+    } else {
+        renderChaman(false);
+    }
+}
+function renderChaman(animar) {
+    const cont = document.getElementById('cham-lectura');
+    if (!cont) return;
+    const c = gameState.chaman, hoy = chamHoy();
+    const vigente = c && c.fecha === hoy;
+    const btn = document.getElementById('cham-btn'), est = document.getElementById('cham-estado');
+    btn.disabled = !!vigente;
+    btn.textContent = vigente ? 'Vuelve mañana por una nueva visión' : 'Consultar al Chamán';
+    est.textContent = vigente ? 'Consultado hoy' : 'Sin consultar hoy';
+    const clave = vigente ? c.fecha : 'nada';
+    if (chamPintado === clave) return;
+    chamPintado = clave;
+    cont.innerHTML = '';
+    if (!vigente) {
+        const p = document.createElement('p');
+        p.textContent = 'El Chamán aguarda junto al fuego, con los ojos velados por la niebla. Puede ver tu jornada, tu ritmo y el camino que te queda hasta el Castillo. Consúltalo una vez por día.';
+        cont.appendChild(p);
+        return;
+    }
+    let n = 0;
+    const add = (tag, texto, clase) => {
+        const e = document.createElement(tag);
+        e.textContent = texto;
+        if (clase) e.className = clase;
+        if (animar) { e.classList.add('cham-vela'); e.style.animationDelay = (n * 0.8) + 's'; }
+        n++;
+        cont.appendChild(e);
+    };
+    add('h4', 'Presagio: ' + c.presagio[0]);
+    add('p', c.presagio[1]);
+    add('div', 'Consejo del día', 'cham-sub');
+    add('p', c.consejo);
+    add('div', 'Visión de tu futuro', 'cham-sub');
+    c.vision.forEach(t => add('p', t));
+    if (animar) {
+        const r = document.getElementById('cham-retrato');
+        r.classList.add('activo');
+        setTimeout(() => r.classList.remove('activo'), 3200);
+    }
+}
+(function () {
+    const ra = renderAll;
+    window.renderAll = function () { ra.apply(this, arguments); try { renderChaman(false); } catch (e) { console.error(e); } };
+})();
+renderChaman(false);
+</script>
+<script>
+// ===== COPIA DE SEGURIDAD: archivo + recordatorio =====
+const RESP_DIAS_AVISO = 7;
+function respHoy() {
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function respDias() {
+    const r = gameState.respaldo;
+    if (!r || !r.ultimo) return null;
+    return Math.max(0, Math.floor((Date.now() - new Date(r.ultimo).getTime()) / 864e5));
+}
+function respEstado() {
+    const d = respDias();
+    if (d === null) {
+        const m = gameState.mapa;
+        const diasAventura = (m && m.inicio) ? Math.floor((Date.now() - new Date(m.inicio + 'T00:00:00').getTime()) / 864e5) : 0;
+        return { aviso: gameState.xp > 0 && diasAventura >= 3, texto: 'Aún no has hecho ninguna copia de seguridad. Si se borran los datos del navegador, pierdes tu progreso.' };
+    }
+    if (d >= RESP_DIAS_AVISO) return { aviso: true, texto: 'Hace ' + d + ' días que no haces una copia de seguridad. Descarga una hoy.' };
+    return { aviso: false, texto: 'Última copia: ' + (d === 0 ? 'hoy.' : (d === 1 ? 'ayer.' : 'hace ' + d + ' días.')) };
+}
+function renderRespaldo() {
+    const est = document.getElementById('respaldo-estado');
+    if (!est) return;
+    const e = respEstado();
+    est.textContent = e.texto;
+    est.classList.toggle('aviso', e.aviso);
+    const r = gameState.respaldo || {};
+    const b = document.getElementById('respaldo-banner');
+    document.getElementById('respaldo-banner-texto').textContent = e.texto;
+    b.classList.toggle('visible', e.aviso && r.posponer !== respHoy());
+}
+function respRegistrar(via) {
+    gameState.respaldo = Object.assign({}, gameState.respaldo, { ultimo: new Date().toISOString(), via: via, posponer: '' });
+    saveGame();
+    renderRespaldo();
+}
+function respPosponer() {
+    gameState.respaldo = Object.assign({}, gameState.respaldo, { posponer: respHoy() });
+    saveGame();
+    renderRespaldo();
+}
+function respMsg(t) { const e = document.getElementById('respaldo-msg'); if (e) e.textContent = t; }
+function respDescargar() {
+    let texto;
+    try {
+        respRegistrar('archivo'); // se registra antes para que el archivo ya lleve su propia fecha
+        texto = saveCodeEncode(gameState);
+    } catch (e) {
+        console.error(e);
+        respMsg('No se pudo generar el archivo.');
+        return;
+    }
+    const blob = new Blob([texto], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'arquero-del-carpio-' + respHoy() + '.txt';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    respMsg('Archivo generado: búscalo en tu carpeta de Descargas y guárdalo en un lugar seguro.');
+}
+function respCargar(input) {
+    const f = input.files && input.files[0];
+    if (!f) return;
+    const r = new FileReader();
+    r.onload = () => {
+        try {
+            const decoded = saveCodeDecode(String(r.result).trim());
+            if (!decoded || typeof decoded !== 'object' || Array.isArray(decoded)) throw new Error('Formato inesperado');
+            if (!confirm('Esto reemplaza tu partida actual por la del archivo. ¿Continuar?')) { input.value = ''; return; }
+            gameState = Object.assign({}, gameState, decoded);
+            saveGame();
+            renderAll();
+            try { revisarCapitulos(); } catch (e) {}
+            respMsg('✅ Partida cargada desde el archivo.');
+        } catch (e) {
+            console.error(e);
+            respMsg('El archivo no es válido.');
+        }
+        input.value = '';
+    };
+    r.onerror = () => respMsg('No se pudo leer el archivo.');
+    r.readAsText(f);
+}
+(function () {
+    // El botón "Copiar Código" también cuenta como copia de seguridad
+    const orig = exportSaveCode;
+    window.exportSaveCode = async function () {
+        await orig.apply(this, arguments);
+        const st = document.getElementById('saveStatus');
+        if (!(st && /No se pudo generar/.test(st.textContent))) respRegistrar('código');
+    };
+    const ra = renderAll;
+    window.renderAll = function () { ra.apply(this, arguments); try { renderRespaldo(); } catch (e) { console.error(e); } };
+})();
+renderRespaldo();
 </script>
 </body>
 </html>
