@@ -932,8 +932,9 @@ html { scroll-behavior: smooth; }
 .topnav::-webkit-scrollbar { display: none; }
 .topnav a { flex: 0 0 auto; padding: 9px 14px; border: 1px solid var(--paper-border); border-radius: 6px; background: #1c1610; color: var(--gold-light); text-decoration: none; font-family: 'Cinzel', serif; font-size: 0.78rem; letter-spacing: 0.04em; white-space: nowrap; }
 .topnav a:hover, .topnav a:focus-visible { background: rgba(201,160,80,0.18); border-color: var(--gold-primary); }
-#misiones, #calendario, #jefes, #mercado, #mapa-box, #atributos, #teatro, #chaman, #respaldo, #cronica { scroll-margin-top: 66px; }
-@media (min-width: 1100px) { .topnav { justify-content: safe center; gap: 8px; padding: 10px 12px; } .topnav a { padding: 11px 13px; font-size: 0.82rem; } }
+#misiones, #calendario, #jefes, #mercado, #mapa-box, #atributos, #teatro, #chaman, #respaldo, #cronica { scroll-margin-top: var(--navh, 66px); }
+@media (min-width: 600px) { .topnav { flex-wrap: wrap; justify-content: center; overflow-x: visible; } .topnav a { flex: 1 1 auto; text-align: center; } }
+@media (min-width: 1100px) { .topnav { justify-content: center; gap: 8px; padding: 10px 12px; } .topnav a { padding: 11px 13px; font-size: 0.82rem; } }
 </style>
 </head>
 <body>
@@ -3020,6 +3021,15 @@ function renderCalendario() {
     window.renderAll = function () { ra.apply(this, arguments); try { renderCalendario(); } catch (e) {} };
 })();
 renderCalendario();
+</script>
+<script>
+// Altura real de la barra superior (para que los saltos no tapen los títulos)
+(function () {
+    const nav = document.getElementById('topnav'); if (!nav) return;
+    const set = () => document.documentElement.style.setProperty('--navh', (nav.offsetHeight + 12) + 'px');
+    set(); window.addEventListener('resize', set);
+    if (window.ResizeObserver) new ResizeObserver(set).observe(nav);
+})();
 </script>
 <script>
 // La música va al final del archivo para no retrasar el resto del juego
